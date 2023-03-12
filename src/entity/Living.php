@@ -17,6 +17,13 @@ abstract class Living extends Entity implements Damageable, Pathfindable{
 		$this->hasKnockback = true;
 		if(self::$despawnMobs) $this->server->schedule(self::$despawnTimer, [$this, "close"]); //900*20
 	}
+
+	public function fall(){
+		$dmg = floor($this->fallDistance - 3);
+		if($dmg > 0){
+			$this->harm($dmg, "fall");
+		}
+	}
 	
 	public function hasPath(){
 		return $this->path != null;
@@ -33,6 +40,7 @@ abstract class Living extends Entity implements Damageable, Pathfindable{
 		if(!$this->dead && Entity::$allowedAI && $this->idleTime <= 0) {
 			$this->ai->updateTasks();
 		}
+		$this->ai->mobController->movementTick();
 		if($this->onGround){
 			//if(!$this->hasPath() && $this->pathFinder instanceof ITileNavigator){
 			//	$this->path = $this->pathFinder->navigate(new PathTileXYZ($this->x, $this->y, $this->z, $this->level), new PathTileXYZ($this->x + mt_rand(-10, 10), $this->y + mt_rand(-1, 1), $this->z + mt_rand(-10, 10), $this->level), 10);

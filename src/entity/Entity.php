@@ -7,7 +7,8 @@ class Entity extends Position
 	const CLASS_TYPE = - 1;
 	
 	public $counter = 0;
-	
+
+	public $fallDistance = 0;
 	public static $updateOnTick, $allowedAI;
 	public $isCollidable;
 	public $canBeAttacked;
@@ -567,6 +568,8 @@ class Entity extends Position
 					$y1 = ceil($aABB->maxY);
 					$z0 = floor($aABB->minZ);
 					$z1 = ceil($aABB->maxZ);
+					$ywMin = floor($aABB->minY + 0.4);
+					$ywMax = ceil($aABB->maxY - 0.4);
 					$x0 = $x0 < 0 ? 0 : $x0;
 					$y0 = $y0 < 0 ? 0 : $y0;
 					$z0 = $z0 < 0 ? 0 : $z0;
@@ -578,8 +581,9 @@ class Entity extends Position
 							for($z = $z0; $z < $z1; ++$z){
 								$pos = new Vector3($x, $y, $z);
 								$b = $this->level->getBlock($pos);
-								if($b->y == ($y1 - 1) && ($b->getID() === WATER || $b->getID() === STILL_WATER)){
-									$water = true;
+								if(($b->getID() === WATER || $b->getID() === STILL_WATER)){
+									$water = $b->y == ($y1 - 1);
+									$this->fallDistance = 0;
 								}
 								if($b != false && $b->isSolid){
 									$this->speedY = $b->boundingBox->calculateYOffset($this->boundingBox, $this->speedY);
@@ -668,7 +672,7 @@ class Entity extends Position
 						$this->server->api->handle("entity.motion", $this);
 					}
 				}
-				
+				$this->updateFallState($this->speedY);
 			} elseif($this->player instanceof Player){
 				if($isFlying === true and ($this->player->gamemode & 0x01) === 0x00){
 					if($this->fallY === false or $this->fallStart === false){
@@ -725,6 +729,18 @@ class Entity extends Position
 		
 		$this->needsUpdate = $hasUpdate;
 		$this->lastUpdate = $now;
+	}
+	
+	public function fall(){}
+
+	public function updateFallState($fallTick){
+		if($this->onGround && $this->fallDistance > 0){
+			$this->fall();
+			$this->fallDistance = 0;
+		}elseif($fallTick < 0){
+			$this->fallDistance -= $fallTick;
+		}
+
 	}
 
 	public function updateMovement()

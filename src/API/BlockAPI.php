@@ -108,7 +108,7 @@ class BlockAPI{
 		[IRON_HOE, 0],
 		[CAKE, 0],
 		[FLINT_STEEL, 0],
-		[DIAMOND_SWORD, 0],
+		[IRON_SWORD, 0],
 		[BOW, 0],
 		[SIGN, 0],
 		[SPAWN_EGG, MOB_CHICKEN],
