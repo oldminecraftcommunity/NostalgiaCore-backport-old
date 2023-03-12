@@ -15,6 +15,8 @@ class Tile extends Position{
 	public $closed;
 	private $server;
 
+	public $scheduledUpdate, $lastUpdate;
+
 	function __construct(Level $level, $id, $class, $x, $y, $z, $data = []){
 		$this->server = ServerAPI::request();
 		$this->level = $level;

@@ -18,6 +18,8 @@ class EntityRegistry{
 		self::registerEntity(Arrow::class);
 		self::registerEntity(PrimedTNT::class);
 		self::registerEntity(Painting::class);
+		self::registerEntity(FallingSand::class);
+		self::registerEntity(ItemEntity::class);
 	}
 	
 	/*Register an Entity*/

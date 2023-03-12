@@ -5,6 +5,7 @@ class MinecraftInterface{
 	public $bandwidth;
 	private $socket;
 	private $packets;
+	public $start;
 
 	function __construct($server, $port = 25565, $serverip = "0.0.0.0"){
 		$this->socket = new UDPSocket($server, $port, true, $serverip);

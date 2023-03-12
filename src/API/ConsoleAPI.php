@@ -2,6 +2,7 @@
 
 class ConsoleAPI{
 
+	public $last;
 	private $loop, $server, $event, $help, $cmds, $alias;
 
 	function __construct(){

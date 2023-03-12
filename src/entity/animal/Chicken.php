@@ -12,6 +12,8 @@ class Chicken extends Animal{
 		$this->setSpeed(0.25);
 		$this->update();
 	}
+
+	public function fall(){} //yes, chickens have no fall dmg
 	
 	public function update(){
 		parent::update();
