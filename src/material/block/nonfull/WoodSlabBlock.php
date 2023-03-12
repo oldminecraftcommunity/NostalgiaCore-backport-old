@@ -3,13 +3,6 @@
 class WoodSlabBlock extends TransparentBlock{
 	public function __construct($meta = 0){
 		parent::__construct(WOOD_SLAB, $meta, "Wooden Slab");
-		$names = array(
-			0 => "Oak",
-			1 => "Spruce",
-			2 => "Birch",
-			3 => "Jungle",
-		);
-		$this->name = (($this->meta & 0x08) === 0x08 ? "Upper ":"") . $names[$this->meta & 0x07] . " Wooden Slab";	
 		if(($this->meta & 0x08) === 0x08){
 			$this->isFullBlock = true;
 		}else{

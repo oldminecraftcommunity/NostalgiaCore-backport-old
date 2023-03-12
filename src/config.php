@@ -50,7 +50,7 @@ define("LOG", true);
 define("START_TIME", microtime(true));
 define("MAJOR_VERSION", "1.0.2dev");
 define("CODENAME", "懐かしさ (Nostalgia)"); //i'm not very creative - kotyaralih
-define("CURRENT_MINECRAFT_VERSION", "v0.8.1 alpha");
+define("CURRENT_MINECRAFT_VERSION", "0.7.4 - 0.7.6");
 define("CURRENT_API_VERSION", '12.1');
 define("CURRENT_PHP_VERSION", "5.5");
 $gitsha1 = false;

@@ -57,10 +57,6 @@ class Pig extends Animal implements Rideable{
 		return parent::interactWith($e, $action);
 	}
 	
-	public function isFood($id){
-		return $id === POTATO || $id === CARROT || $id === BEETROOT;
-	}
-	
 	public function getDrops(){
 		return $this->isBaby() ? parent::getDrops() : ($this->isSaddled() ? [
 			[($this->fire > 0 ? COOKED_PORKCHOP : RAW_PORKCHOP), 0, mt_rand(0,2)],

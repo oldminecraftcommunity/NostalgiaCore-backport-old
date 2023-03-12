@@ -1,7 +1,7 @@
 <?php
 /*
 BLOCKS:
-BurningFurnace, Fire, GlowingObsidian, GlowingRedstoneOre, Glowstone, Lava, LitPumpkin, Torch
+BurningFurnace, Fire, GlowingObsidian, Glowstone, Lava, Torch
 */
 interface LightingBlock{
 	/*Max light distance (Used to melt ice)*/

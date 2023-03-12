@@ -6,10 +6,6 @@ class MobController
 	 * @var Entity
 	 */
 	public $entity;
-	
-	public $finalYaw, $finalPitch, $finalHeadYaw;
-	
-	
 	public function __construct($e){
 		$this->entity = $e;
 	}
@@ -40,17 +36,14 @@ class MobController
 				}
 			}
 		}
-		$this->faceEntity($this->entity->add($ox, $oy, $oz));
+		
 		if($this->entity->knockbackTime <= 0){
 		    $this->entity->moveEntityWithOffset($ox, $oy, $oz);
 		}
+		
+		
+		$this->faceEntity($this->entity->add($ox, $oy, $oz));
 		return true;
-	}
-	
-	public function rotateTick(){ //TODO handle more rotation
-		$w180 = Utils::wrapAngleTo180($this->finalHeadYaw - $this->entity->headYaw);
-		$w180min = min(abs($w180), 20)*Utils::getSign($w180);
-		$this->entity->headYaw = Utils::wrapAngleTo360($this->entity->headYaw + $w180min);
 	}
 	
 	public function moveTo($x, $y, $z){
@@ -65,7 +58,7 @@ class MobController
 		$tan = $dz == 0 ? ($dx < 0 ? 180 : 0) : (90 - rad2deg(atan($dx / $dz))); 
 		$thetaOffset = $dz < 0 ? 90 : 270;
 		$calcYaw = ($thetaOffset + $tan);
-		$this->finalHeadYaw = $this->entity->yaw = $calcYaw;
+		$this->entity->yaw = $calcYaw;
 	}
 	
 	public function lookOffset($x, $y, $z, $pitch = true){
@@ -73,7 +66,7 @@ class MobController
 		$thetaOffset = $z < 0 ? 90 : 270;
 		$calcYaw = $tan + $thetaOffset;
 		
-		$this->entity->yaw = $this->finalHeadYaw = $calcYaw;
+		$this->entity->yaw= $calcYaw;
 		
 		if($pitch){
 			$diff = sqrt($x * $x + $z * $z);

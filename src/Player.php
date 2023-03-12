@@ -1491,20 +1491,6 @@ class Player{
 						break;
 				}
 				break;
-			case ProtocolInfo::ROTATE_HEAD_PACKET:
-				if($this->spawned === false){
-					break;
-				}
-				if(($this->entity instanceof Entity)){
-					if($this->blocked === true or $this->server->api->handle("player.move", $this->entity) === false){
-						if($this->lastCorrect instanceof Vector3){
-							$this->teleport($this->lastCorrect, $this->entity->yaw, $this->entity->pitch, false);
-						}
-					}else{
-						$this->entity->setPosition($this->entity, $packet->yaw, $this->entity->pitch);
-					}
-				}
-				break;
 			case ProtocolInfo::MOVE_PLAYER_PACKET:
 				if($this->spawned === false){
 					break;
@@ -1846,7 +1832,6 @@ class Player{
 						$items = [ //TODO rewrite
 							APPLE => 4,
 							MUSHROOM_STEW => 10,
-							BEETROOT_SOUP => 10,
 							BREAD => 5,
 							RAW_PORKCHOP => 3,
 							COOKED_PORKCHOP => 8,
@@ -1856,11 +1841,6 @@ class Player{
 							RAW_CHICKEN => 2,
 							MELON_SLICE => 2,
 							GOLDEN_APPLE => 10,
-							PUMPKIN_PIE => 8,
-							CARROT => 4,
-							POTATO => 1,
-							BAKED_POTATO => 6,
-							BEETROOT => 1
 						];
 						$slot = $this->getSlot($this->slot);
 						if($this->entity->getHealth() < 20 and isset($items[$slot->getID()])){
@@ -1874,7 +1854,7 @@ class Player{
 							if($slot->count <= 0){
 								$this->setSlot($this->slot, BlockAPI::getItem(AIR, 0, 0), false);
 							}
-							if($slot->getID() === MUSHROOM_STEW or $slot->getID() === BEETROOT_SOUP){
+							if($slot->getID() === MUSHROOM_STEW){
 								$this->addItem(BOWL, 0, 1, false);
 							}
 						}

@@ -224,7 +224,7 @@ class NetherReactorBlock extends SolidBlock{
 	}
 	
 	private $possibleLoot = [
-		GLOWSTONE_DUST, QUARTZ, CACTUS, SUGARCANE, BROWN_MUSHROOM, RED_MUSHROOM, PUMPKIN_SEEDS, MELON_SEEDS
+		GLOWSTONE_DUST, QUARTZ, CACTUS, SUGARCANE, BROWN_MUSHROOM, RED_MUSHROOM, MELON_SEEDS
 	];
 	
 	private $rarePossibleLoot = [

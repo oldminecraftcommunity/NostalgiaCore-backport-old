@@ -11,10 +11,6 @@ class Cow extends Animal{
 		$this->update();
 	}
 	
-	public function isFood($id){
-		return $id === WHEAT;
-	}
-	
 	public function interactWith(Entity $e, $action){
 		if($e->isPlayer() && $action === InteractPacket::ACTION_HOLD){
 			$slot = $e->player->getHeldItem();

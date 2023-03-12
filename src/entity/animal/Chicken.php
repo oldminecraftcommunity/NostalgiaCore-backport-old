@@ -12,9 +12,6 @@ class Chicken extends Animal{
 		$this->setSpeed(0.25);
 		$this->update();
 	}
-	public function isFood($id){
-		return $id === PUMPKIN_SEEDS || $id === MELON_SEEDS || $id === BEETROOT_SEEDS || $id === WHEAT_SEEDS;
-	}
 	
 	public function update(){
 		parent::update();

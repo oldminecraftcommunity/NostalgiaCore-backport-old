@@ -45,12 +45,6 @@ class Item{
 		STEAK => "SteakItem",
 		RAW_CHICKEN => "RawChickenItem",
 		COOKED_CHICKEN => "CookedChickenItem",
-		CARROT => "CarrotItem",
-		POTATO => "PotatoItem",
-		BAKED_POTATO => "BakedPotatoItem",
-		PUMPKIN_PIE => "PumpkinPieItem",
-		BEETROOT => "BeetrootItem",
-		BEETROOT_SOUP => "BeetrootSoupItem",
 	
 		//generic
 		ARROW => "ArrowItem",
@@ -70,10 +64,8 @@ class Item{
 		SIGN => "SignItem",
 		WOODEN_DOOR => "WoodenDoorItem",
 		BUCKET => "BucketItem",
-		MINECART => "MinecartItem",
 		SADDLE => "SaddleItem",
 		IRON_DOOR => "IronDoorItem",
-		REDSTONE => "RedstoneItem",
 		SNOWBALL => "SnowballItem",
 		LEATHER => "LeatherItem",
 		BRICK => "BrickItem",
@@ -88,13 +80,11 @@ class Item{
 		BONE => "BoneItem",
 		SUGAR => "SugarItem",
 		BED => "BedItem",
-		PUMPKIN_SEEDS => "PumpkinSeedsItem",
 		MELON_SEEDS => "MelonSeedsItem",
 		SPAWN_EGG => "SpawnEggItem",
 		NETHER_BRICK => "NetherBrickItem",
 		QUARTZ => "QuartzItem",
 		CAMERA => "CameraItem",
-		BEETROOT_SEEDS => "BeetrootSeedsItem",
 		
 		//tool
 		IRON_SHOVEL => "IronShovelItem",
@@ -124,8 +114,6 @@ class Item{
 		IRON_HOE => "IronHoeItem",
 		DIAMOND_HOE => "DiamondHoeItem",
 		GOLDEN_HOE => "GoldenHoeItem",
-		COMPASS => "CompassItem",
-		CLOCK => "ClockItem",
 		SHEARS => "ShearsItem",
 		
 	);

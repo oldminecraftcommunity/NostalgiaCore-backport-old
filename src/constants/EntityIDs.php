@@ -22,7 +22,6 @@ define("ENTITY_OBJECT", 3);
 	define("OBJECT_SNOWBALL", 81);
 	define("OBJECT_EGG", 82);
 	define("OBJECT_PAINTING", 83);
-	define("OBJECT_MINECART", 84);
 
 define("ENTITY_ITEM", 4);
 

@@ -1,6 +1,6 @@
 <?php
 
-class AnimatePacket extends RakNetDataPacket{
+class AnimatePacket extends RakNetDataPacket{ //is it even needed in 0.7? ._.
 	/**
 	 * Minecart Hurt, Swing Hand
 	 */

@@ -74,7 +74,6 @@ class PocketMinecraftServer{
 			"enable-mob-ai" => false,
 			"enable-nether-reactor" => true,
 			"enable-explosions" => true,
-			"enable-rail-connection" => false,
 			"save-player-data" => true,
 			"save-console-data" => true,
 			"query-plugins" => false,
@@ -94,7 +93,6 @@ class PocketMinecraftServer{
 			console("[WARNING] Experemental mob features are enabled. Unpredictable behavior.");
 		}
 		Explosion::$enableExplosions = $this->extraprops->get("enable-explosions");
-		RailBlock::$shouldconnectrails = $this->extraprops->get("enable-rail-connection"); //Rail connection in config
 		NetherReactorBlock::$enableReactor = $this->extraprops->get("enable-nether-reactor");
 		if($this->extraprops->get("discord-msg") == true){
 			if($this->extraprops->get("discord-webhook-url") !== "none"){

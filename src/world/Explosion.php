@@ -7,7 +7,6 @@ class Explosion{
 		STONE => COBBLESTONE,
 		COAL_ORE => COAL,
 		DIAMOND_ORE => DIAMOND,
-		REDSTONE_ORE => REDSTONE,
 	];
 	public static $enableExplosions = true;
 	public $level; //Rays

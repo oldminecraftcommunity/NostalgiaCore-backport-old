@@ -85,18 +85,6 @@ abstract class Animal extends Creature implements Ageable, Breedable{
 		return $this->inLove > 0;
 	}
 	
-	public function interactWith(Entity $e, $action){
-		if($e->isPlayer() && $action === InteractPacket::ACTION_HOLD){
-			$slot = $e->player->getHeldItem();
-			if($this->isFood($slot->getID())){
-				$e->player->removeItem($slot->getID(), $slot->getMetadata(), 1);
-				$this->inLove = 600; //600 ticks, original mehod from mcpe
-				return true;
-			}
-		}
-		parent::interactWith($e, $action);
-	}
-	
 	public function counterUpdate(){
 		parent::counterUpdate();
 		if($this->isInLove()){

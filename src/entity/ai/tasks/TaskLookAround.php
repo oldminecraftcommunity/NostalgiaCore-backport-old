@@ -25,7 +25,6 @@ class TaskLookAround extends TaskBase
 			$this->selfCounter = 0;
 		}
 		$v = min(Utils::getSign($this->rotation) * 10, $this->rotation);
-		$ai->entity->headYaw += $v;
 		$this->rotation -= $v;
 		
 	}

@@ -85,11 +85,8 @@ define("BUCKET", 325);
 define("WATER_BUCKET", "325:8");
 define("LAVA_BUCKET", "325:10");
 define("MILK_BUCKET", "325:1");
-define("MINECART", 328);
 define("SADDLE", 329);
 define("IRON_DOOR", 330);
-define("REDSTONE", 331);
-define("REDSTONE_DUST", 331);
 define("SNOWBALL", 332);
 
 define("LEATHER", 334);
@@ -105,9 +102,7 @@ define("BOOK", 340);
 define("SLIMEBALL", 341);
 
 define("EGG", 344);
-define("COMPASS", 345);
 
-define("CLOCK", 347);
 define("GLOWSTONE_DUST", 348);
 define("DYE", 351);
 define("BONE", 352);
@@ -118,7 +113,6 @@ define("BED", 355);
 define("SHEARS", 359);
 define("MELON", 360);
 define("MELON_SLICE", 360);
-define("PUMPKIN_SEEDS", 361);
 define("MELON_SEEDS", 362);
 define("RAW_BEEF", 363);
 define("BEEF", 363);
@@ -129,18 +123,8 @@ define("COOKED_CHICKEN", 366);
 
 define("SPAWN_EGG", 383);
 
-define("CARROT", 391);
-define("POTATO", 392);
-define("BAKED_POTATO", 393);
-
-define("PUMPKIN_PIE", 400);
-
 define("NETHER_BRICK", 405);
 define("QUARTZ", 406);
 define("NETHER_QUARTZ", 406);
 
 define("CAMERA", 456);
-define("BEETROOT", 457);
-define("BEETROOT_SEEDS", 458);
-define("BEETROOT_SEED", 458);
-define("BEETROOT_SOUP", 459);

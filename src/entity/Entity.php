@@ -28,7 +28,7 @@ class Entity extends Position
 	public $name;
 	public $x, $y, $z;
 	public $speedX, $speedY, $speedZ, $speed;
-	public $lastX = 0, $lastY  = 0, $lastZ  = 0, $lastYaw  = 0, $lastPitch  = 0, $lastTime = 0, $lastHeadYaw = 0, $lastSpeedX = 0, $lastSpeedY = 0, $lastSpeedZ = 0;
+	public $lastX = 0, $lastY  = 0, $lastZ  = 0, $lastYaw  = 0, $lastPitch  = 0, $lastTime = 0, $lastSpeedX = 0, $lastSpeedY = 0, $lastSpeedZ = 0;
 	/**
 	 * 0 = lastX, 
 	 * 1 = lastY, 
@@ -42,7 +42,7 @@ class Entity extends Position
 	 * @var array
 	 */
 	public $last;
-	public $yaw, $headYaw;
+	public $yaw;
 	public $pitch;
 	public $dead;
 	public $data;
@@ -115,7 +115,6 @@ class Entity extends Position
 		$this->speedZ = isset($this->data["speedZ"]) ? (float) $this->data["speedZ"] : 0;
 		$this->speed = 0;
 		$this->yaw = isset($this->data["yaw"]) ? (float) $this->data["yaw"] : 0;
-		$this->headYaw = isset($this->data["headYaw"]) ? $this->data["headYaw"] : $this->yaw;
 		$this->pitch = isset($this->data["pitch"]) ? (float) $this->data["pitch"] : 0;
 		$this->position = array(
 			"level" => $this->level,
@@ -528,7 +527,7 @@ class Entity extends Position
 								$support = true;
 								$isFlying = false;
 								break;
-							} elseif(($b instanceof LiquidBlock) or $b->getID() === COBWEB or $b->getID() === LADDER or $b->getID() === FENCE or $b->getID() === STONE_WALL or $b->getID() === IRON_BARS){
+							} elseif(($b instanceof LiquidBlock)or $b->getID() === LADDER or $b->getID() === FENCE){
 								$isFlying = false;
 							}
 						} elseif($this->isSupport($v1, $this->width)){
@@ -537,7 +536,7 @@ class Entity extends Position
 								$support = true;
 								$isFlying = false;
 								break;
-							} elseif(($b instanceof LiquidBlock) or $b->getID() === COBWEB or $b->getID() === LADDER or $b->getID() === FENCE or $b->getID() === STONE_WALL or $b->getID() === IRON_BARS){
+							} elseif(($b instanceof LiquidBlock)or $b->getID() === LADDER or $b->getID() === FENCE){
 								$isFlying = false;
 							}
 						}
@@ -693,7 +692,7 @@ class Entity extends Position
 						$d = $this->level->getBlock(new Vector3($x, $y + 1, $z));
 						$d2 = $this->level->getBlock(new Vector3($x, $y + 2, $z));
 						$dmg = ($this->fallY - $y) - 3;
-						if($dmg > 0 and ! ($d instanceof LiquidBlock) and $d->getID() !== LADDER and $d->getID() !== COBWEB and ! ($d2 instanceof LiquidBlock) and $d2->getID() !== LADDER and $d2->getID() !== COBWEB){
+						if($dmg > 0 and ! ($d instanceof LiquidBlock) and $d->getID() !== LADDER and ! ($d2 instanceof LiquidBlock) and $d2->getID() !== LADDER){
 							$this->harm($dmg, "fall");
 						}
 					}
@@ -733,11 +732,8 @@ class Entity extends Position
 		if($this->closed === true){
 			return false;
 		}
-		if($this->lastHeadYaw != $this->headYaw){
-			$this->sendHeadYaw();
-		}
 		$now = microtime(true);
-		if($this->isStatic === false and ($this->lastX != $this->x or $this->lastY != $this->y or $this->lastZ != $this->z or $this->lastYaw != $this->yaw or $this->lastPitch != $this->pitch or $this->lastHeadYaw != $this->headYaw)){
+		if($this->isStatic === false and ($this->lastX != $this->x or $this->lastY != $this->y or $this->lastZ != $this->z or $this->lastYaw != $this->yaw or $this->lastPitch != $this->pitch)){
 			if($this->class === ENTITY_PLAYER or ($this->last[5] + 8) < $now){
 				if($this->server->api->handle("entity.move", $this) === false){
 					if($this->class === ENTITY_PLAYER){
@@ -776,7 +772,9 @@ class Entity extends Position
 				$this->updateLast();
 			}
 			
+			
 		}
+
 		$this->lastUpdate = $now;
 	}
 	
@@ -1060,13 +1058,6 @@ class Entity extends Position
 		$this->updateAABB();
 	}
 	
-	public function sendHeadYaw(){
-		$pk = new RotateHeadPacket;
-		$pk->eid = $this->eid;
-		$pk->yaw = $this->headYaw;
-		$this->server->api->player->broadcastPacket($this->level->players, $pk);
-	}
-	
 	public function setPosition(Vector3 $pos, $yaw = false, $pitch = false)
 	{
 		if($pos instanceof Position and $pos->level instanceof Level and $this->level !== $pos->level){
@@ -1210,7 +1201,6 @@ class Entity extends Position
 		$this->last[3] = $this->yaw;
 		$this->last[4] = $this->pitch;
 		$this->last[5] = microtime(true);
-		$this->lastHeadYaw = $this->headYaw;
 	}
 
 	public function getPosition($round = false)

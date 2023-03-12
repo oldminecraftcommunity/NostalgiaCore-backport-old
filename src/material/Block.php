@@ -21,16 +21,12 @@ abstract class Block extends Position{
 			COAL_ORE => "CoalOreBlock",
 			WOOD => "WoodBlock",
 			LEAVES => "LeavesBlock",
-			SPONGE => "SpongeBlock",
 			GLASS => "GlassBlock",
 			LAPIS_ORE => "LapisOreBlock",
 			LAPIS_BLOCK => "LapisBlock",
 			SANDSTONE => "SandstoneBlock",
 			BED_BLOCK => "BedBlock",
-			POWERED_RAIL => "PoweredRailBlock",
-			COBWEB => "CobwebBlock",
 			TALL_GRASS => "TallGrassBlock",
-			DEAD_BUSH => "DeadBushBlock",
 			WOOL => "WoolBlock",
 			DANDELION => "DandelionBlock",
 			CYAN_FLOWER => "CyanFlowerBlock",
@@ -61,13 +57,10 @@ abstract class Block extends Position{
 			SIGN_POST => "SignPostBlock",
 			WOOD_DOOR_BLOCK => "WoodDoorBlock",
 			LADDER => "LadderBlock",
-			RAIL => "RailBlock",
 			COBBLESTONE_STAIRS => "CobblestoneStairsBlock",
 			WALL_SIGN => "WallSignBlock",
 
 			IRON_DOOR_BLOCK => "IronDoorBlock",
-			REDSTONE_ORE => "RedstoneOreBlock",
-			GLOWING_REDSTONE_ORE => "GlowingRedstoneOreBlock",
 
 			SNOW_LAYER => "SnowLayerBlock",
 			ICE => "IceBlock",
@@ -77,12 +70,10 @@ abstract class Block extends Position{
 			SUGARCANE_BLOCK => "SugarcaneBlock",
 
 			FENCE => "FenceBlock",
-			PUMPKIN => "PumpkinBlock",
 			NETHERRACK => "NetherrackBlock",
 			SOUL_SAND => "SoulSandBlock",
 			GLOWSTONE_BLOCK => "GlowstoneBlock",
 
-			LIT_PUMPKIN => "LitPumpkinBlock",
 			INVISIBLE_BEDROCK => "InvisibleBedrockBlock",
 			
 			CAKE_BLOCK => "CakeBlock",
@@ -91,10 +82,8 @@ abstract class Block extends Position{
 
 			STONE_BRICKS => "StoneBricksBlock",
 
-			IRON_BARS => "IronBarsBlock",
 			GLASS_PANE => "GlassPaneBlock",
 			MELON_BLOCK => "MelonBlock",
-			PUMPKIN_STEM => "PumpkinStemBlock",
 			MELON_STEM => "MelonStemBlock",
 
 			FENCE_GATE => "FenceGateBlock",
@@ -106,26 +95,12 @@ abstract class Block extends Position{
 			NETHER_BRICKS_STAIRS => "NetherBricksStairsBlock",
 
 			SANDSTONE_STAIRS => "SandstoneStairsBlock",
-			
-			SPRUCE_WOOD_STAIRS => "SpruceWoodStairsBlock",
-			BIRCH_WOOD_STAIRS => "BirchWoodStairsBlock",
-			JUNGLE_WOOD_STAIRS => "JungleWoodStairsBlock",
-			STONE_WALL => "StoneWallBlock",
-			
-			CARROT_BLOCK => "CarrotBlock",			
-			POTATO_BLOCK => "PotatoBlock",
 
 			QUARTZ_BLOCK => "QuartzBlock",
 			QUARTZ_STAIRS => "QuartzStairsBlock",
 			DOUBLE_WOOD_SLAB => "DoubleWoodSlabBlock",
 			WOOD_SLAB => "WoodSlabBlock",
-		
-			HAY_BALE => "HayBaleBlock",
-			CARPET => "CarpetBlock",
 			
-			COAL_BLOCK => "CoalBlock",
-			
-			BEETROOT_BLOCK => "BeetrootBlock",
 			STONECUTTER => "StonecutterBlock",
 			GLOWING_OBSIDIAN => "GlowingObsidianBlock",
 			NETHER_REACTOR => "NetherReactorBlock",

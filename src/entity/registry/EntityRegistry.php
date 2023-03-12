@@ -18,7 +18,6 @@ class EntityRegistry{
 		self::registerEntity(Arrow::class);
 		self::registerEntity(PrimedTNT::class);
 		self::registerEntity(Painting::class);
-		self::registerEntity(Minecart::class);
 	}
 	
 	/*Register an Entity*/

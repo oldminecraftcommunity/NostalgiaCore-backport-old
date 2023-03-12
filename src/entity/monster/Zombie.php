@@ -45,8 +45,6 @@ class Zombie extends Monster{
 	
 	public function getDrops(){
 		return [
-			[CARROT, 0, Utils::chance(0.83) ? 1 : 0],
-			[POTATO, 0, Utils::chance(0.83) ? 1 : 0],
 			[FEATHER, 0, mt_rand(0,2)]
 		];
 	}

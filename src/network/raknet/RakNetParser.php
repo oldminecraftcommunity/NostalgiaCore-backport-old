@@ -224,9 +224,6 @@ class RakNetParser{
 				case ProtocolInfo::MOVE_ENTITY_PACKET_POSROT:
 					$data = new MoveEntityPacket_PosRot;
 					break;
-				case ProtocolInfo::ROTATE_HEAD_PACKET:
-					$data = new RotateHeadPacket;
-					break;
 				case ProtocolInfo::MOVE_PLAYER_PACKET:
 					$data = new MovePlayerPacket;
 					break;
