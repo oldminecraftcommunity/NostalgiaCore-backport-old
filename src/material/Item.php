@@ -39,7 +39,6 @@ class Item{
 		BREAD => "BreadItem",
 		RAW_PORKCHOP => "RawPorkchopItem",
 		COOKED_PORKCHOP => "CookedPorkchopItem",
-		CAKE => "CakeItem",
 		MELON => "MelonItem",
 		BEEF => "BeefItem",
 		STEAK => "SteakItem",

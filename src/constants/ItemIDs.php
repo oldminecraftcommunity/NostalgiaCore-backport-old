@@ -107,7 +107,6 @@ define("GLOWSTONE_DUST", 348);
 define("DYE", 351);
 define("BONE", 352);
 define("SUGAR", 353);
-define("CAKE", 354);
 define("BED", 355);
 
 define("SHEARS", 359);

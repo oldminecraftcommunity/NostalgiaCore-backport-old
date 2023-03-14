@@ -113,7 +113,6 @@ class CraftingRecipes{
 						   //Food & protection
 						   "WOODEN_PLANKS:?x3=>BOWL:0x4",
 						   "WHEAT:?x3=>BREAD:0x1",
-						   "WHEAT:?x3,BUCKET:1x3,EGG:?x1,SUGAR:?x2=>CAKE:0x1",
 						   "DIAMOND:?x4=>DIAMOND_BOOTS:0x1",
 						   "DIAMOND:?x8=>DIAMOND_CHESTPLATE:0x1",
 						   "DIAMOND:?x5=>DIAMOND_HELMET:0x1",
@@ -241,12 +240,12 @@ class CraftingRecipes{
 	public static function canCraft(array $craftItem, array $recipeItems, $type){
 		ksort($recipeItems);
 		$recipeString = "";
-		foreach($recipeItems as $item){
+		/*foreach($recipeItems as $item){
 			if($craftItem[0] === CAKE && $item[0] === BUCKET && $item[1] === 1){ //some dark magic with recipe happened in mcpe, pmmp restores it back to normal
 				$item[2] = 3;
 			}
 			$recipeString .= $item[0] . "x" . $item[2] . ",";
-		}
+		}*/
 		$recipeString = substr($recipeString, 0, -1) . "=>" . $craftItem[0] . "x" . $craftItem[2];
 		$server = ServerAPI::request();
 		$result = $server->query("SELECT id FROM recipes WHERE type == " . $type . " AND recipe == '" . $recipeString . "';");
@@ -261,9 +260,9 @@ class CraftingRecipes{
 						break;
 					}
 					$oitem = $recipeItems[$item[0]];
-					if($craftItem[0] === CAKE && $oitem[0] === BUCKET && $item[1] === 1){ //some dark magic with recipe happened in mcpe, pmmp restores it back to normal x2
+					/*if($craftItem[0] === CAKE && $oitem[0] === BUCKET && $item[1] === 1){ //some dark magic with recipe happened in mcpe, pmmp restores it back to normal x2
 						$oitem[2] = 3;
-					}
+					}*/
 					if(($oitem[1] !== $item[1] and $item[1] !== false) or $oitem[2] !== $item[2]){
 						$continue = false;
 						break;

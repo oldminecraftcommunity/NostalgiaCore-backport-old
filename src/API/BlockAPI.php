@@ -106,7 +106,6 @@ class BlockAPI{
 		[MELON_SEEDS, 0],
 		[DYE, 15], //Bonemeal
 		[IRON_HOE, 0],
-		[CAKE, 0],
 		[FLINT_STEEL, 0],
 		[IRON_SWORD, 0],
 		[BOW, 0],

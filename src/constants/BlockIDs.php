@@ -83,6 +83,8 @@ define("COBBLESTONE_STAIRS", 67);
 define("WALL_SIGN", 68);
 
 define("IRON_DOOR_BLOCK", 71);
+define("REDSTONE_ORE", 73);
+define("GLOWING_REDSTONE_ORE", 74);
 
 define("SNOW", 78);
 define("SNOW_LAYER", 78);
@@ -98,8 +100,6 @@ define("NETHERRACK", 87);
 define("SOUL_SAND", 88);
 define("GLOWSTONE", 89);
 define("GLOWSTONE_BLOCK", 89);
-
-define("CAKE_BLOCK", 92);
 
 define("INVISIBLE_BEDROCK", 95);
 define("TRAPDOOR", 96);

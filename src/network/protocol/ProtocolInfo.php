@@ -3,7 +3,7 @@
 
 abstract class ProtocolInfo{
 
-	const CURRENT_PROTOCOL = 12;
+	const CURRENT_PROTOCOL = 9;
 
 	const PING_PACKET = 0x00;
 
@@ -52,20 +52,20 @@ abstract class ProtocolInfo{
 	const HURT_ARMOR_PACKET = 0xa5;
 	const SET_ENTITY_DATA_PACKET = 0xa6;
 	const SET_ENTITY_MOTION_PACKET = 0xa7;
-	const SET_ENTITY_LINK_PACKET = 0xa8;
-	const SET_HEALTH_PACKET = 0xa9;
-	const SET_SPAWN_POSITION_PACKET = 0xaa;
-	const ANIMATE_PACKET = 0xab;
-	const RESPAWN_PACKET = 0xac;
-	const SEND_INVENTORY_PACKET = 0xad;
-	const DROP_ITEM_PACKET = 0xae;
-	const CONTAINER_OPEN_PACKET = 0xaf;
-	const CONTAINER_CLOSE_PACKET = 0xb0;
-	const CONTAINER_SET_SLOT_PACKET = 0xb1;
-	const CONTAINER_SET_DATA_PACKET = 0xb2;
-	const CONTAINER_SET_CONTENT_PACKET = 0xb3;
-	//const CONTAINER_ACK_PACKET = 0xb4;
-	const CHAT_PACKET = 0xb5;
+	//const SET_ENTITY_LINK_PACKET = 0xa8;
+	const SET_HEALTH_PACKET = 0xa8;
+	const SET_SPAWN_POSITION_PACKET = 0xa0;
+	const ANIMATE_PACKET = 0xaa;
+	const RESPAWN_PACKET = 0xab;
+	const SEND_INVENTORY_PACKET = 0xac;
+	const DROP_ITEM_PACKET = 0xad;
+	const CONTAINER_OPEN_PACKET = 0xae;
+	const CONTAINER_CLOSE_PACKET = 0xaf;
+	const CONTAINER_SET_SLOT_PACKET = 0xb0;
+	const CONTAINER_SET_DATA_PACKET = 0xb1;
+	const CONTAINER_SET_CONTENT_PACKET = 0xb2;
+	//const CONTAINER_ACK_PACKET = 0xb3;
+	const CHAT_PACKET = 0xb4;
 	const ADVENTURE_SETTINGS_PACKET = 0xb6;
 	const ENTITY_DATA_PACKET = 0xb7;
 	const PLAYER_INPUT_PACKET = 0xb9;

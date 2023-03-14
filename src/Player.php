@@ -899,7 +899,6 @@ class Player{
 
 			if($m !== ""){
 				$pk = new MessagePacket;
-				$pk->source = ($author instanceof Player) ? $author->username : $author;
 				$pk->message = TextFormat::clean($m); //Colors not implemented :(
 				$this->dataPacket($pk);
 			}
@@ -1132,7 +1131,7 @@ class Player{
 				$this->lag[] = microtime(true) - $data->sendtime;
 				$data->sendtime = microtime(true);
 				$cnt = $this->send($data);
-				if(isset($this->chunkCount[$count])){
+				if(!is_null($cnt) and isset($this->chunkCount[$count])){
 					unset($this->chunkCount[$count]);
 					if(!is_null($cnt) and !is_null($cnt[0]))
 						$this->chunkCount[$cnt[0]] = true;
@@ -2276,10 +2275,6 @@ class Player{
 						break;
 					case BREAD:
 						AchievementAPI::grantAchievement($this, "makeBread");
-						break;
-					case CAKE:
-						AchievementAPI::grantAchievement($this, "bakeCake");
-						$this->addItem(BUCKET, 0, 3);
 						break;
 					case STONE_PICKAXE:
 					case GOLDEN_PICKAXE:

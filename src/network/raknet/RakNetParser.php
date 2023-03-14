@@ -320,8 +320,6 @@ class RakNetParser{
 				case ProtocolInfo::ENTITY_DATA_PACKET:
 					$data = new EntityDataPacket;
 					break;
-				case ProtocolInfo::SET_ENTITY_LINK_PACKET:
-					$data = new SetEntityLinkPacket;
 				case ProtocolInfo::PLAYER_INPUT_PACKET:
 					$data = new PlayerInputPacket;
 					break;
