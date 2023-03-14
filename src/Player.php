@@ -12,7 +12,6 @@ class Player{
 	public $spawned = false;
 	public $inventory;
 	public $slot;
-	public $hotbar;
 	public $armor = [];
 	public $loggedIn = false;
 	public $gamemode;
@@ -88,7 +87,6 @@ class Player{
 		$this->gamemode = $this->server->gamemode;
 		$this->level = $this->server->api->level->getDefault();
 		$this->slot = 0;
-		$this->hotbar = [0, -1, -1, -1, -1, -1, -1, -1, -1];
 		$this->packetStats = [0, 0];
 		$this->buffer = new RakNetPacket(RakNetInfo::DATA_PACKET_0);
 		$this->buffer->data = [];
@@ -580,15 +578,10 @@ class Player{
 		if(($this->gamemode & 0x01) === CREATIVE){
 			return;
 		}
-		$hotbar = [];
-		foreach($this->hotbar as $slot){
-			$hotbar[] = $slot <= -1 ? -1 : $slot + 9;
-		}
 
 		$pk = new ContainerSetContentPacket;
 		$pk->windowid = 0;
 		$pk->slots = $this->inventory;
-		$pk->hotbar = $hotbar;
 		$this->dataPacket($pk);
 	}
 
@@ -942,16 +935,8 @@ class Player{
 			$this->sendArmor();
 		}
 		if(($this->gamemode & 0x01) === ($gm & 0x01)){
-			if(($gm & 0x01) === 0x01 and ($gm & 0x02) === 0x02){
-				$inv = [];
-				foreach(BlockAPI::$creative as $item){
-					$inv[] = BlockAPI::getItem(0, 0, 1);
-				}
-			}elseif(($gm & 0x01) === 0x01){
-				$inv = [];
-				foreach(BlockAPI::$creative as $item){
-					$inv[] = BlockAPI::getItem($item[0], $item[1], 1);
-				}
+			if(($gm & 0x01) === 0x01){
+				$inv = array(array(STONE, 0, 1));
 			}
 			$this->gamemode = $gm;
 			$this->sendChat("Your gamemode has been changed to " . $this->getGamemode() . ".\n");
@@ -1201,15 +1186,16 @@ class Player{
 				"z" => $this->spawnPosition->z
 			]);
 			$inv = [];
-			foreach($this->inventory as $slot => $item){
-				if($item instanceof Item){
-					if($slot < (($this->gamemode & 0x01) === 0 ? PLAYER_SURVIVAL_SLOTS : PLAYER_CREATIVE_SLOTS)){
-						$inv[$slot] = [$item->getID(), $item->getMetadata(), $item->count];
+			if(($this->gamemode & 0x01) === 0){
+				foreach($this->inventory as $slot => $item){
+					if($item instanceof Item){
+						if($slot < PLAYER_SURVIVAL_SLOTS){
+							$inv[$slot] = array($item->getID(), $item->getMetadata(), $item->count);
+						}
 					}
 				}
+				$this->data->set("inventory", $inv);
 			}
-			$this->data->set("inventory", $inv);
-			$this->data->set("hotbar", $this->hotbar);
 
 			$armor = [];
 			foreach($this->armor as $slot => $item){
@@ -1355,13 +1341,7 @@ class Player{
 					if(($this->gamemode & 0x01) === 0x01){
 						$inv = [];
 						if(($this->gamemode & 0x02) === 0x02){
-							foreach(BlockAPI::$creative as $item){
-								$inv[] = [0, 0, 1];
-							}
-						}else{
-							foreach(BlockAPI::$creative as $item){
-								$inv[] = [$item[0], $item[1], 1];
-							}
+							$inv = array(array(STONE, 0, 1));
 						}
 					}
 					$this->data->set("inventory", $inv);
@@ -1403,13 +1383,8 @@ class Player{
 
 				if(($this->gamemode & 0x01) === 0x01){
 					$this->slot = 0;
-					$this->hotbar = [];
-				}elseif($this->data->exists("hotbar")){
-					$this->hotbar = $this->data->get("hotbar");
-					$this->slot = $this->hotbar[0];
 				}else{
 					$this->slot = -1;//0
-					$this->hotbar = [-1, -1, -1, -1, -1, -1, -1, -1, -1];
 				}
 				$this->entity = $this->server->api->entity->add($this->level, ENTITY_PLAYER, 0, ["player" => $this]);
 				$this->eid = $this->entity->eid;
@@ -1525,7 +1500,7 @@ class Player{
 				$data["eid"] = $packet->eid;
 				$data["player"] = $this;
 
-				if($packet->slot === 0x28 or $packet->slot === 0){ //0 for 0.8.0 compatibility
+				if($packet->slot === 0x28){
 					$data["slot"] = -1;
 					$data["item"] = BlockAPI::getItem(AIR, 0, 0);
 					if($this->server->handle("player.equipment.change", $data) !== false){
@@ -1538,22 +1513,25 @@ class Player{
 
 
 				if(($this->gamemode & 0x01) === SURVIVAL){
+					$packet->slot = false;
+					foreach($this->inventory as $slot => $item){
+						if($item->getID() === $packet->item and $item->getMetadata() === $packet->meta){
+							$packet->slot = $slot;
+							break;
+						}
+					}
+					if($packet->slot === false){
+						break;
+					}
 					$data["item"] = $this->getSlot($packet->slot);
 					if(!($data["item"] instanceof Item)){
 						break;
 					}
 				}elseif(($this->gamemode & 0x01) === CREATIVE){
-					$packet->slot = false;
-					foreach(BlockAPI::$creative as $i => $d){
-						if($d[0] === $packet->item and $d[1] === $packet->meta){
-							$packet->slot = $i;
-						}
-					}
-					if($packet->slot !== false){
-						$data["item"] = $this->getSlot($packet->slot);
-					}else{
-						break;
-					}
+					$packet->slot = 0;
+					$item = BlockAPI::getItem($packet->item, $packet->meta);
+					$this->setSlot(0, $item);
+					$data["item"] = $item;
 				}else{
 					break;//?????
 				}
@@ -1562,12 +1540,6 @@ class Player{
 
 				if($this->server->handle("player.equipment.change", $data) !== false){
 					$this->slot = $packet->slot;
-					if(($this->gamemode & 0x01) === SURVIVAL){
-						if(!in_array($this->slot, $this->hotbar)){
-							array_pop($this->hotbar);
-							array_unshift($this->hotbar, $this->slot);
-						}
-					}
 				}else{
 					//$this->sendInventorySlot($packet->slot);
 					$this->sendInventory();
