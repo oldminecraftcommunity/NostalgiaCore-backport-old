@@ -61,6 +61,8 @@ abstract class Block extends Position{
 			WALL_SIGN => "WallSignBlock",
 
 			IRON_DOOR_BLOCK => "IronDoorBlock",
+			REDSTONE_ORE => "RedstoneOreBlock",
+			GLOWING_REDSTONE_ORE => "GlowingRedstoneOreBlock"
 
 			SNOW_LAYER => "SnowLayerBlock",
 			ICE => "IceBlock",

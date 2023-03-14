@@ -83,6 +83,8 @@ define("COBBLESTONE_STAIRS", 67);
 define("WALL_SIGN", 68);
 
 define("IRON_DOOR_BLOCK", 71);
+define("REDSTONE_ORE", 73);
+define("GLOWING_REDSTONE_ORE", 74);
 
 define("SNOW", 78);
 define("SNOW_LAYER", 78);
