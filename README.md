@@ -4,11 +4,11 @@
 
 NostalgiaCore is a fork of Legacy PocketMine-MP 1.3.12, which fixes bugs of Legacy PocketMine-MP, and adds new content
 
-Supported MCPE versions: 0.7.4, 0.7.5, 0.7.6
+Supported MCPE versions: 0.6.0, 0.6.1 (maybe 0.6.2)
 
 (Special thx to GullCraft Network and DartMiner43)
 
-<h2> Why should you use NostalgiaCore to run a Minecraft Pocket Edition 0.7.4 - 0.7.6 server?</h2>
+<h2> Why should you use NostalgiaCore to run a Minecraft Pocket Edition 0.6.1 server?</h2>
 
 • Items are dropping normally.
 
