@@ -2,6 +2,9 @@
 
 class SaplingBlock extends FlowableBlock{
 	const OAK = 0;
+	const SPRUCE = 1;
+	const BIRCH = 2;
+
 	const BURN_TIME = 5;
 	
 	public function __construct($meta = SaplingBlock::OAK){

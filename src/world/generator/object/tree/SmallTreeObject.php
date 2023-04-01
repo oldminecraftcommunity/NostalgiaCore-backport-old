@@ -8,7 +8,7 @@ class SmallTreeObject extends TreeObject{
 
 private static $leavesHeight = 4;
 	private static $leafRadii = [1, 1.41, 2.83, 2.24];
-		public $type = 0; // All trees appear to be 4 tall
+	public $type = 0;
 	public $treeHeight = 7;
 	private $trunkHeight = 5;
 	private $addLeavesVines = false;
