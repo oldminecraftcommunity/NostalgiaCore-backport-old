@@ -29,6 +29,8 @@ abstract class Living extends Entity implements Damageable, Pathfindable{
 		return $this->path != null;
 	}
 	
+	public function eatGrass(){}
+	
 	public function __destruct()
 	{
 		parent::__destruct();
