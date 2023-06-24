@@ -330,6 +330,18 @@ class MersenneTwister{ //Does it even used? //rename back if any problems will b
 				($this->int32() & MASK26)) *
 			(1.0 / 9007199254740992.0);
 	}
+
+	function nextInt($bound = null){
+		return $bound == null ? ($this->int32() >> 1) : ($this->int32() % $bound);
+	}
+
+	function nextFloat(){
+		return $this->int32() * 2.3283064365386963E-010;
+	}
+
+	function setSeed($seed){
+		$this->init_with_integer($seed);
+	}
 }
 
 function signed2unsigned($signed_integer){

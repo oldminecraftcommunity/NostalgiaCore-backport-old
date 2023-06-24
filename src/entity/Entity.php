@@ -137,8 +137,8 @@ class Entity extends Position
 				$this->player = $this->data["player"];
 				$this->setHealth($this->health, "generic");
 				$this->speedModifer = 1;
-				$this->width = 1.2;
-				$this->height = 1.8;
+				$this->width = 1.4; //original nc numbers (just wonder is it true for 0.7???)
+				$this->height = 1.85;
 				$this->hasKnockback = true;
 				$this->hasGravity = true;
 				$this->canBeAttacked = true;
@@ -244,8 +244,7 @@ class Entity extends Position
 	 *			Entity instance or EID
 	 * @return number|false if failed
 	 */
-	public static function getWidthOf($e)
-	{
+	public static function getWidthOf($e){
 		if($e instanceof Entity){
 			return $e->getWidth();
 		} elseif(($e = ServerAPI::request()->api->entity->get($e)) != false){
@@ -259,8 +258,7 @@ class Entity extends Position
 	 *
 	 * @return number
 	 */
-	public function getHeight($a)
-	{
+	public function getHeight(){ //btw we need syntax fix in entire core
 		return $this->height;
 	}
 
