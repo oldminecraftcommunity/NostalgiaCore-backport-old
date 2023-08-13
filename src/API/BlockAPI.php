@@ -108,7 +108,7 @@ class BlockAPI{
 		[DYE, 15], //Bonemeal
 		[IRON_HOE, 0],
 		[CAKE, 0],
-		[FLINT_STEEL, 0],
+		[EGG, 0],
 		[IRON_SWORD, 0],
 		[BOW, 0],
 		[SIGN, 0],
