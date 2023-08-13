@@ -5,7 +5,6 @@ class EntityAPI{
 	private $server;
 	private $eCnt = 1;
 	private $serverSpawnAnimals, $serverSpawnMobs;
-	
 	function __construct(){
 		$this->entities = [];
 		$this->server = ServerAPI::request();
@@ -71,8 +70,8 @@ class EntityAPI{
 				}
 				elseif(is_numeric($args[1])){//summon <mob> [amount]
 					$amount = (int) $args[1];
-					if($amount > 100){
-						return "Cannot spawn > 100 mobs";
+					if($amount > 1000){
+						return "Cannot spawn > 1000 mobs";
 					}
 					$isBaby = false;
 					if(isset($args[2]) and strtolower($args[2]) === 'baby'){//summon <mob> [amount] [baby]
@@ -93,45 +92,51 @@ class EntityAPI{
 			case "despawn":
 				$cnt = 0;
 				if(!isset($args[0])){
-					$output .= "/despawn <all or (mobs,objects,items,fallings)>";
-					break;
-				}else{
-					if($args[0] === "all"){
-						$cnt = 0;
-						foreach($this->entities as $e){
-							if(isset($e) && $e != null && !$e->isPlayer()){ //if player, not despawning
-								$this->remove($e->eid);
-								$cnt++;
+					return "/despawn <all|mobs|objects|items|fallings>";
+				}
+				
+				$despawnclass = 0;
+				$despawntype = 0;
+				switch($args[0]){
+					case "all":
+						foreach($this->entities as $entity){
+							if($entity instanceof Entity && !$entity->isPlayer()){
+								$entity->close();
+								++$cnt;
 							}
 						}
-					}else{
-						$array = explode(",", strtolower($args[0]));
-						if(count($array) > 4){
-							$output .= "Many arguments!";
-							break;
+						break;
+					case "mobs":
+						$despawnclass = ENTITY_MOB;
+						break;
+					case "objects":
+						$despawnclass = ENTITY_OBJECT;
+						break;
+					case "items":
+						$despawnclass = ENTITY_ITEM;
+						break;
+					case "fallings":
+						$despawnclass = ENTITY_FALLING;
+						break;
+				}
+				if($despawnclass){
+					foreach($this->entities as $entity){
+						if($entity instanceof Entity && !$entity->isPlayer() && $entity->class === $despawnclass){
+							$entity->close();
+							++$cnt;
 						}
-						//terrible code
-						$list = "";
-						$temp = ["mobs" => "2", "objects" => "3", "items" => "4", "fallings" => "5"];
-						foreach($array as $value){
-							$list .= $temp[$value]." or ";
-						}
-						$despawning = substr($list, 0, -4);
-						$l = $this->server->query("SELECT EID FROM entities WHERE class = ".$despawning.";");
-						if($l !== false and $l !== true){
-							while(($e = $l->fetchArray(SQLITE3_ASSOC)) !== false){
-								$e = $this->get($e["EID"]);
-								if($e instanceof Entity){
-									$this->remove($e->eid);
-									$cnt++;
-								}
-							}
+					}
+				}
+				if($despawntype){
+					foreach($this->entities as $entity){
+						if($entity instanceof Entity && !$entity->isPlayer() && $entity->type === $despawntype){
+							$entity->close();
+							++$cnt;
 						}
 					}
 				}
 				
-				$output = "$cnt entities have been despawned!";
-				break;
+				return "$cnt entities have been despawned!";
 		}
 		return $output;
 	}
@@ -192,7 +197,7 @@ class EntityAPI{
 	}
 	
 	public function updateRadius(Position $center, $radius = 15, $class = false){
-		$this->server->query("UPDATE entities SET hasUpdate = 1 WHERE level = '" . $center->level->getName() . "' " . ($class !== false ? "AND class = $class " : "") . "AND abs(x - {$center->x}) <= $radius AND abs(y - {$center->y}) <= $radius AND abs(z - {$center->z}) <= $radius;");
+		//useless now? $this->server->query("UPDATE entities SET hasUpdate = 1 WHERE level = '" . $center->level->getName() . "' " . ($class !== false ? "AND class = $class " : "") . "AND abs(x - {$center->x}) <= $radius AND abs(y - {$center->y}) <= $radius AND abs(z - {$center->z}) <= $radius;");
 	}
 	
 	public function getRadius(Position $center, $radius = 15, $class = false){
@@ -255,9 +260,9 @@ class EntityAPI{
 			"y" => $pos->y + 0.19,
 			"z" => $pos->z + mt_rand(-10, 10) / 50,
 			"level" => $pos->level,
-			"speedX" => Utils::randomFloat() * 0.2 - 0.1,
+			"speedX" => lcg_value() * 0.2 - 0.1,
 			"speedY" => 0.2,
-			"speedZ" => Utils::randomFloat() * 0.2 - 0.1,
+			"speedZ" => lcg_value() * 0.2 - 0.1,
 			"item" => $item,
 		];
 		if($this->server->api->handle("item.drop", $data) !== false){
@@ -272,7 +277,7 @@ class EntityAPI{
 	}
 	
 	public function spawnAll(Player $player){
-		foreach($this->getAll($player->level) as $e){
+		foreach($player->level->entityList as $e){
 			if($e->class !== ENTITY_PLAYER){
 				$e->spawn($player);
 			}

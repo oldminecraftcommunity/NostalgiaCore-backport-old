@@ -96,7 +96,6 @@ class LevelAPI{
 		}
 		return true;
 	}
-
 	/**
 	 * @param string $name
 	 * @return Level|boolean

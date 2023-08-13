@@ -1,6 +1,7 @@
 <?php
 
-abstract class Feature{
+abstract class Feature
+{
 	public static $TREE, $BIRCH_TREE, $PINE_TREE, $SPRUCE_TREE;
 	public static $FLOWER_RED, $FLOWER_YELLOW, $MUSHROOM_BROWN, $MUSHROOM_RED;
 	public static function init(){
@@ -12,9 +13,10 @@ abstract class Feature{
 		Feature::$FLOWER_YELLOW = new FlowerFeature(DANDELION);
 		Feature::$MUSHROOM_BROWN = new FlowerFeature(BROWN_MUSHROOM);
 		Feature::$MUSHROOM_RED = new FlowerFeature(RED_MUSHROOM);
-
+		
 	}
 	public function place(Level $level, MersenneTwister $rand, $x, $y, $z){ //TODO pass VanillaGenerator instance and update heightmap on ceratin block placement
-
+		
 	}
 }
+

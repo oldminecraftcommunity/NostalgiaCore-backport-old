@@ -35,6 +35,7 @@ class SugarcaneBlock extends FlowableBlock{
 	}
 
 	public function onUpdate($type){
+		
 		$down = $this->getSide(0);
 		if($down->getID() === GRASS or $down->getID() === DIRT or $down->getID() === SAND){
 			$block0 = $down->getSide(2);
@@ -57,29 +58,22 @@ class SugarcaneBlock extends FlowableBlock{
 		}
 		return false;
 	}
-
 	public static function onRandomTick(Level $level, $x, $y, $z){
-		$underID = $level->level->getBlockID($x, $y - 1, $z);
-		$b = $level->level->getBlock($x, $y, $z);
-		$id = $b[0];
-		$meta = $b[1];
-		if($underID !== SUGARCANE_BLOCK){
-			if($meta == 0x0F){
-				for($yy = 1; $yy < 3; ++$yy){
-					$bID = $level->level->getBlockID($x, $y + $yy, $z);
-					if($bID === AIR){
-						$level->setBlock(new Position($x, $y, $z, $level), new SugarcaneBlock(), true, false, true);
-					}
+		$aboveID = $level->level->getBlockID($x, $y + 1, $z);
+		if($aboveID === AIR){
+			$l = 0;
+			while($level->level->getBlockId($x, $y - ++$l, $z) === REEDS);
+			if($l < 3){
+				$myMeta = $level->level->getBlockDamage($x, $y, $z);
+				if($myMeta == 0xf){
+					$level->fastSetBlockUpdate($x, $y + 1, $z, REEDS, 0);
+					$level->fastSetBlockUpdateMeta($x, $y, $z, 0);
+				}else{
+					$level->fastSetBlockUpdateMeta($x, $y, $z, 1 + $myMeta);
 				}
-				$meta = 0;
-				$level->fastSetBlockUpdate($x, $y, $z, $id, $meta);
-			}else{
-				$level->fastSetBlockUpdate($x, $y, $z, $id, $meta + 1);
 			}
-			return BLOCK_UPDATE_RANDOM;
 		}
 	}
-
 	public function place(Item $item, Player $player, Block $block, Block $target, $face, $fx, $fy, $fz){
 			$down = $this->getSide(0);
 			if($down->getID() === SUGARCANE_BLOCK){

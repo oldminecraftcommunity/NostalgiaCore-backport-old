@@ -39,15 +39,15 @@ class Utils{
 		return $id;
 	}
 	
-	public static function wrapAngleTo180_float($par0)
+	public static function wrapAngleTo360($angle)
 	{
-		$par0 %= 360.0;
-		return $par0 >= 180 ? $par0 - 360 : (($par0 < -180) ? ($par0 + 360) : $par0);
+		$angle = fmod($angle, 360);
+		return $angle < 0 ? $angle + 360 : $angle;
 	}
-
+	
 	public static function getSeedNumeric($seed){
 		if($seed === "") return false;
-		else if(is_int($seed)) return (int)$seed;
+		elseif(is_int($seed)) return (int)$seed;
 		else{
 			$i = 0;
 			for($j = 0; $j < strlen($seed); ++$j){
@@ -56,7 +56,7 @@ class Utils{
 			return (int)$i;
 		}
 	}
-
+	
 	public static function sint32($r){
 		$r &= 0xFFFFFFFF;
 		if ($r & 0x80000000)
@@ -67,6 +67,11 @@ class Utils{
 		return $r;
 	}
 	
+	public static function wrapAngleTo180($angle)
+	{
+		$angle = fmod($angle+180, 360);
+		return $angle < 0 ? $angle + 360 : $angle - 180;
+	}
 	public static function getSign($v){
 		return $v > 0 ? 1 : ($v < 0 ? -1  : 0);
 	}
@@ -581,11 +586,14 @@ class Utils{
 	}
 	
 	public static function chance($i){//GameHerobrine's code
-		return self::randomFloat() <= $i / 100;
+		return lcg_value() <= $i / 100;
 	}
-
-	public static function randomFloat(){//GameHerobrine's code
-		return rand() / getrandmax();
+	
+	/**
+	 * @deprecated use lcg_value instead
+	 */
+	public static function randomFloat(){
+		return lcg_value();
 	}
 
 	public static function round($number){

@@ -61,13 +61,15 @@ class PlayerAPI{
 				if(is_numeric($data["cause"])){
 					$e = $this->server->api->entity->get($data["cause"]);
 					if($e instanceof Entity){
-						switch($e->class){
-							case ENTITY_PLAYER:
-								$message = " was killed by " . $e->name;
-								break;
-							default:
-								$message = " was killed by {$e->getName()}";
-								break;
+						if($e instanceof Arrow){
+							if($e->shotByEntity && isset($this->server->api->entity->entities[$e->shooterEID]) && $this->server->api->entity->entities[$e->shooterEID] instanceof Entity){
+								$message = " was shot by {$this->server->api->entity->entities[$e->shooterEID]->name}";
+							}else{
+								$message = " was shot";	
+							}
+							
+						}else{
+							$message = "was killed by {$e->name}";
 						}
 					}
 				}else{
@@ -106,7 +108,6 @@ class PlayerAPI{
 				}
 				$this->server->api->chat->broadcast($data["player"]->username . $message);
 				return true;
-				break;
 		}
 	}
 
@@ -391,12 +392,12 @@ class PlayerAPI{
 		];
 
 		if(!file_exists(DATA_PATH . "players/" . $iname . ".yml")){
-			if($this->server->extraprops->get("save-player-data") && $create){
+			if(PocketMinecraftServer::$SAVE_PLAYER_DATA && $create){
 				console("[NOTICE] Player data not found for \"" . $iname . "\", creating new profile");
 				$data = new Config(DATA_PATH . "players/" . $iname . ".yml", CONFIG_YAML, $default);
 				$data->save();
 			}else{
-				return false;
+				return new Config(DATA_PATH . "players/$iname.yml", CONFIG_YAML, $default);
 			}
 		}
 
@@ -493,7 +494,7 @@ class PlayerAPI{
 	}
 
 	public function saveOffline(Config $data){
-		if($this->server->extraprops->get("save-player-data")){
+		if(PocketMinecraftServer::$SAVE_PLAYER_DATA){
 			$this->server->handle("player.offline.save", $data);
 			$data->save();
 		}

@@ -49,10 +49,10 @@ ini_set("memory_limit", "256M"); //Default
 define("LOG", true);
 define("START_TIME", microtime(true));
 define("MAJOR_VERSION", "1.1.0dev");
-define("CODENAME", "懐かしさ (Nostalgia)"); //i'm not very creative - kotyaralih
-define("CURRENT_MINECRAFT_VERSION", "0.7.6");
+define("CODENAME", "ブレインファック (Brainfuck)"); //i think it can have it's own name uwu
+define("CURRENT_MINECRAFT_VERSION", "v0.7.6 alpha");
 define("CURRENT_API_VERSION", '12.1');
-define("CURRENT_PHP_VERSION", "5.5");
+define("CURRENT_PHP_VERSION", "8.0");
 $gitsha1 = false;
 if(file_exists(FILE_PATH . ".git/refs/heads/master")){ //Found Git information!
 	define("GIT_COMMIT", strtolower(trim(file_get_contents(FILE_PATH . ".git/refs/heads/master"))));

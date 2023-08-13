@@ -61,8 +61,9 @@ class NetherReactorBlock extends SolidBlock{
 		for($a = $aOne; $a < $aTwo; $a += $aThree) { //wth those cycles are? TODO simplify if possible(makes server lag)
 			for($b = $bOne; $b < $bTwo; $b += $bThree) {
 				for($c = $cOne; $c < $cTwo; $c += $cThree) {
-					if ($this->level->getBlock(new Vector3($x+$a, $y+$b, $z+$c))->getID() === 87 && Utils::randomFloat() > 0.75){
-						$this->level->setBlock(new Vector3($x+$a, $y+$b, $z+$c), new AirBlock());
+					if ($this->level->level->getBlockID($x+$a, $y+$b, $z+$c) === NETHERRACK && lcg_value() > 0.75){
+						//$this->level->setBlock(new Vector3($x+$a, $y+$b, $z+$c), new AirBlock());
+						$this->level->fastSetBlockUpdate($x+$a, $y+$b, $z+$c, 0, 0); //TODO might be better to set not directly?
 					}
 				}
 			}
@@ -90,23 +91,23 @@ class NetherReactorBlock extends SolidBlock{
 		$forceAmount = $data[3];
 		$server = ServerAPI::request();
 		if(!$forceAmount){
-			$spawnNumber = $minAmount + floor(Utils::randomFloat()*($maxAmount-$minAmount+1));
+			$spawnNumber = $minAmount + floor(lcg_value()*($maxAmount-$minAmount+1));
 		}
 		else{
 			$spawnNumber = $maxAmount;
 		}
 		for($i = 0; $i < $spawnNumber; $i++) {
-			$randomRange = floor(Utils::randomFloat()*5+3);
-			$shiftX = cos(floor(Utils::randomFloat()*360)*(pi()/180));
-			$shiftZ = sin(floor(Utils::randomFloat()*360)*(pi()/180));
+			$randomRange = floor(lcg_value()*5+3);
+			$shiftX = cos(floor(lcg_value()*360)*(pi()/180));
+			$shiftZ = sin(floor(lcg_value()*360)*(pi()/180));
 			if(Utils::chance(5)) $randomID = $this->rarePossibleLoot[array_rand($this->rarePossibleLoot)];
 			else $randomID = $this->possibleLoot[array_rand($this->possibleLoot)];
 			$server->api->entity->drop(new Position($x+($shiftX*$randomRange)+0.5, $y, $z+($shiftZ*$randomRange)+0.5, $this->level), BlockAPI::getItem($randomID, 0, 1));
 		}
 		for($i = 0; $i < $pigmen; $i++) {
-			$randomRange = floor(Utils::randomFloat()*5+3);
-			$shiftX = cos(floor(Utils::randomFloat()*360)*(pi()/180));
-			$shiftZ = sin(floor(Utils::randomFloat()*360)*(pi()/180));
+			$randomRange = floor(lcg_value()*5+3);
+			$shiftX = cos(floor(lcg_value()*360)*(pi()/180));
+			$shiftZ = sin(floor(lcg_value()*360)*(pi()/180));
 			$data = array(
 					"x" => $x+($shiftX*$randomRange)+0.5,
 					"y" => $y,
@@ -188,7 +189,7 @@ class NetherReactorBlock extends SolidBlock{
 		foreach($this->core as $yOffset => $layer){
 			foreach($layer as $line){
 				foreach(str_split($line) as $char){
-					$b = $this->level->getBlock(new Vector3($x + $offsetX, $y + $yOffset, $z + $offsetZ))->getID();
+					$b = $this->level->level->getBlockID($x + $offsetX, $y + $yOffset, $z + $offsetZ);
 					switch($char){
 						case "G":
 							if($b === GOLD_BLOCK){ //TODO make it use structure class
@@ -201,7 +202,7 @@ class NetherReactorBlock extends SolidBlock{
 							}
 							return false;
 						case "R":
-							if($b === NETHER_REACTOR and $this->level->getBlock(new Vector3($x + $offsetX, $y + $yOffset, $z + $offsetZ))->getMetadata() === 0){
+							if($b === NETHER_REACTOR and $this->level->level->getBlockDamage($x + $offsetX, $y + $yOffset, $z + $offsetZ) === 0){
 								break;
 							}
 							return false;
@@ -210,8 +211,6 @@ class NetherReactorBlock extends SolidBlock{
 								break;
 							}
 							return false;
-						default:
-							break;
 					}
 					++$offsetX;
 				}

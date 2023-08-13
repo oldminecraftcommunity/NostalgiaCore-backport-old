@@ -1,6 +1,7 @@
 <?php
 
-class PineFeature extends Feature{
+class PineFeature extends Feature
+{
 	public function place(Level $level, MersenneTwister $rand, $x, $y, $z){
 		$l = $rand->nextInt(5) + 7;
 		$i1 = $l - $rand->nextInt(2) - 3;
@@ -22,16 +23,16 @@ class PineFeature extends Feature{
 					if($l1 >= 0 && $l1 < 128){
 						$j4 = $level->level->getBlockID($l2, $l1, $k3);
 						if($j4 != 0 && $j4 != LEAVES){
-							$flag = false;
+							return;
 						}
 					}else{
-						$flag = false;
+						return;
 					}
 				}
 			}
 		}
 		if(!$flag) return false;
-
+		
 		$i2 = $level->level->getBlockID($x, $y - 1, $z);
 		if(($i2 != GRASS && $i2 != DIRT) || $y >= 128 - $l - 1) return false;
 		$level->level->setBlockID($x, $y - 1, $z, DIRT);
@@ -46,7 +47,7 @@ class PineFeature extends Feature{
 					}
 				}
 			}
-
+			
 			if($k2 >= 1 && $i3 == $y + $i1 + 1){
 				--$k2;
 				continue;
@@ -55,7 +56,7 @@ class PineFeature extends Feature{
 				++$k2;
 			}
 		}
-
+		
 		for($j3 = 0; $j3 < $l - 1; ++$j3){
 			$i4 = $level->level->getBlockID($x, $y + $j3, $z);
 			if($i4 == 0 || $i4 == LEAVES){
@@ -64,3 +65,4 @@ class PineFeature extends Feature{
 		}
 	}
 }
+

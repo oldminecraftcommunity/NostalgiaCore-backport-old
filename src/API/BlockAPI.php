@@ -3,6 +3,7 @@
 class BlockAPI{
 
 	public static $creative = [
+
 		[COBBLESTONE, 0],
 		[STONE_BRICKS, 0],
 		[STONE_BRICKS, 1],
@@ -455,15 +456,14 @@ class BlockAPI{
 		if($block === false){
 			return false;
 		}
-
-		if($type === BLOCK_UPDATE_RANDOM) return false; //I HATE U NO //ghero hate someone???
+		if($type === BLOCK_UPDATE_RANDOM) return false; //I HATE U NO
 		$level = $block->onUpdate($type);
 		if($level === BLOCK_UPDATE_NORMAL){
 			$this->blockUpdateAround($block, $level);
 			$this->server->api->entity->updateRadius($pos, 1);
 		}elseif($level === BLOCK_UPDATE_RANDOM){
 			//$this->nextRandomUpdate($pos); old version, change back if any issues will start to happen with this one(please note that old version makes a lot of lag)
-			//$this->scheduleBlockUpdate($pos, (mt_rand(25, 75) + Utils::getRandomUpdateTicks() * 0.05) / 0.05, BLOCK_UPDATE_RANDOM);
+			//NO $this->scheduleBlockUpdate($pos, (mt_rand(25, 75) + Utils::getRandomUpdateTicks() * 0.05) / 0.05, BLOCK_UPDATE_RANDOM);
 		}
 		return $level;
 	}
@@ -484,7 +484,7 @@ class BlockAPI{
 			$this->blockUpdate($pos->getSide(5), $type);
 		}
 	}
-
+	
 	public function scheduleBlockUpdate(Position $pos, $delay, $type = BLOCK_UPDATE_SCHEDULED){
 		$type = (int) $type;
 		if($delay < 0){

@@ -21,7 +21,12 @@ class TreeObject{
 				$tree = new SmallTreeObject();
 				$tree->type = SaplingBlock::BIRCH;
 				break;
+			case SaplingBlock::JUNGLE:
+				$tree = new SmallTreeObject();
+				$tree->type = SaplingBlock::JUNGLE;
+				break;
 			default:
+			case SaplingBlock::OAK:
 				/*if($random->nextRange(0, 9) === 0){
 					$tree = new BigTreeObject();
 				}else{*/

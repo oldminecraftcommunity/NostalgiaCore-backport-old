@@ -10,20 +10,17 @@ class Level{
 	 * @var Entity[]
 	 */
 	public $entityList;
-
-	public $tiles, $blockUpdates, $nextSave, $players = [], $level, $mobSpawner;
+	
+	public $tiles, $blockUpdates, $nextSave, $players = [], $level, $mobSpawner, $totalMobsAmount = 0;
 	private $time, $startCheck, $startTime, $server, $name, $usedChunks, $changedBlocks, $changedCount, $stopTime;
-
+	
 	public static $randomUpdateBlocks = [
 		FIRE => true,
 		FARMLAND => true,
 		GLOWING_REDSTONE_ORE => true,
-		BEETROOT_BLOCK => true,
+		SAPLING => true,
 		CACTUS => true,
-		CARROT_BLOCK => true,
 		MELON_STEM => true,
-		POTATO_BLOCK => true,
-		PUMPKIN_STEM => true,
 		SUGARCANE_BLOCK => true,
 		WHEAT_BLOCK => true,
 		DIRT => true,
@@ -31,7 +28,7 @@ class Level{
 		ICE => true,
 		LEAVES => true
 	];
-
+	
 	public function __construct(PMFLevel $level, Config $entities, Config $tiles, Config $blockUpdates, $name){
 		$this->server = ServerAPI::request();
 		$this->level = $level;
@@ -51,7 +48,7 @@ class Level{
 		$this->changedBlocks = [];
 		$this->changedCount = [];
 		$this->mobSpawner = new MobSpawner($this);
-		$this->randInt1 = 0x283AE83;
+		$this->randInt1 = 0x283AE83; //it is static in 0.1, and i dont care is it in 0.8
 		$this->randInt2 = 0x3C6EF35F;
 	}
 
@@ -286,8 +283,21 @@ class Level{
 		}
 		return $ret;
 	}
-
-	public function fastSetBlockUpdate($x, $y, $z, $id, $meta){
+	public function fastSetBlockUpdateMeta($x, $y, $z, $meta, $updateBlock = false){
+		$this->level->setBlockDamage($x, $y, $z, $meta);
+		$pk = new UpdateBlockPacket;
+		$pk->x = $x;
+		$pk->y = $y;
+		$pk->z = $z;
+		$pk->block = $this->level->getBlockID($x, $y, $z);
+		$pk->meta = $meta;
+		$this->server->api->player->broadcastPacket($this->players, $pk);
+		if($updateBlock){
+			$this->server->api->block->blockUpdateAround(new Position($x, $y, $z, $this), BLOCK_UPDATE_NORMAL, 1);
+		}
+	}
+	
+	public function fastSetBlockUpdate($x, $y, $z, $id, $meta, $updateBlocksAround = false){
 		$this->level->setBlock($x, $y, $z, $id, $meta);
 		$pk = new UpdateBlockPacket;
 		$pk->x = $x;
@@ -296,36 +306,40 @@ class Level{
 		$pk->block = $id;
 		$pk->meta = $meta;
 		$this->server->api->player->broadcastPacket($this->players, $pk);
+		if($updateBlocksAround){
+			$this->server->api->block->blockUpdateAround(new Position($x, $y, $z, $this), BLOCK_UPDATE_NORMAL, 1);
+		}
 	}
-
+	
 	public function onTick(PocketMinecraftServer $server){
+		//$ents = $server->api->entity->getAll($this);
 		if(!$this->stopTime) ++$this->time;
-		$p = new Position(0, 0, 0, $this);
-		for($i = 0; $i < 256; ++$i){ //0000 0000 x z
-			$cZ = $i & 0xf;
-			$cX = $i >> 4;
-			for($c = 0; $c <= 80; ++$c){
-				$this->randInt1 = $this->randInt1 * 3 + $this->randInt2;
-				$xyz = $this->randInt1 >> 2;
-				$this->randInt1 = $this->randInt1 & 0xffffffff;
-				$x = $xyz & 0xf;
-				$z = ($xyz >> 8) & 0xf; //TODO might be possible to make some micro optmizations
-				$y = ($xyz >> 16) & 0x7f;
-				$idmeta = $this->level->getBlock(($cX << 4) + $x, $y, $z + ($cZ << 4));
-				$id = $idmeta[0];
-				if(isset(self::$randomUpdateBlocks[$id])){
-					$c = nullsafe(Block::$class[$id], false);
-					if($c !== false){
-						$c::onRandomTick($this, ($cX << 4) + $x, $y, $z + ($cZ << 4));
+		for($cX = 0; $cX < 16; ++$cX){
+			for($cZ = 0; $cZ < 16; ++$cZ){
+				$index = $this->level->getIndex($cX, $cZ);
+				if(!isset($this->level->chunks[$index]) || $this->level->chunks[$index] === false) continue;
+				for($c = 0; $c <= 20; ++$c){
+					$xyz = mt_rand(0, 0xffffffff) >> 2;//TODO fix php5
+					$x = $xyz & 0xf;
+					$z = ($xyz >> 8) & 0xf; //TODO might be possible to make some micro optmizations
+					$y = ($xyz >> 16) & 0x7f;
+					$id = $this->level->fastGetBlockID($cX, $y >> 4, $cZ, $x, $y & 0xf, $z, $index); //$this->level->getBlockID(($cX << 4) + $x, $y, $z + ($cZ << 4));
+					if(isset(self::$randomUpdateBlocks[$id])){
+						$cl = Block::$class[$id];
+						$cl::onRandomTick($this, ($cX << 4) + $x, $y, $z + ($cZ << 4));
 					}
 				}
-
 			}
 		}
+		$this->totalMobsAmount = 0;
 		foreach($this->entityList as $k => $e){
 			if(!($e instanceof Entity)){
 				unset($this->entityList[$k]);
+				unset($this->server->entities[$k]);
 				continue;
+			}
+			if($e->class === ENTITY_MOB && !$e->isPlayer()){
+				++$this->totalMobsAmount;
 			}
 			if($e->needsUpdate){
 				$e->update();

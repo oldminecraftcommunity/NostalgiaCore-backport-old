@@ -2,7 +2,9 @@
 
 
 class Player{
-
+	
+	public static $smallChunks = false;
+	/** @var Config */
 	public $data;
 	/** @var Entity */
 	public $entity = false;
@@ -162,9 +164,9 @@ class Player{
 				}
 
 				foreach($this->level->entityList as $e){
-					if($e !== $this->entity){
+					if($e->eid !== $this->entity->eid){
 						if($e->isPlayer()){
-							$pk = new MoveEntityPacket_PosRot;
+							$pk = new MovePlayerPacket();
 							$pk->eid = $this->entity->eid;
 							$pk->x = -256;
 							$pk->y = 128;
@@ -173,7 +175,7 @@ class Player{
 							$pk->pitch = 0;
 							$e->player->dataPacket($pk);
 							
-							$pk = new MoveEntityPacket_PosRot;
+							$pk = new MovePlayerPacket();
 							$pk->eid = $e->eid;
 							$pk->x = -256;
 							$pk->y = 128;
@@ -181,6 +183,7 @@ class Player{
 							$pk->yaw = 0;
 							$pk->pitch = 0;
 							$this->dataPacket($pk);
+							
 						}else{
 							$pk = new RemoveEntityPacket;
 							$pk->eid = $e->eid;
@@ -238,7 +241,7 @@ class Player{
 			$this->entity->calculateVelocity();
 			if($terrain === true){
 				$this->orderChunks();
-				$this->getNextChunk($this->level);
+				$this->server->schedule(1, [$this, "getNextChunk"], $this->level);
 			}
 			$this->entity->check = true;
 			if($force === true){
@@ -412,19 +415,36 @@ class Player{
 		}
 		$X = ((int)$this->entity->x) >> 4;
 		$Z = ((int)$this->entity->z) >> 4;
-		$v = new Vector2($X, $Z);
 		$this->chunksOrder = [];
-		for($x = 0; $x < 16; ++$x){
-			for($z = 0; $z < 16; ++$z){
-				$dist = $v->distance(new Vector2($x, $z));
-				for($y = 0; $y < 8; ++$y){
-					$d = $x . ":" . $y . ":" . $z;
-					if(!isset($this->chunksLoaded[$d])){
-						$this->chunksOrder[$d] = $dist;
+		if(self::$smallChunks){
+			$Y = ((int)$this->entity->y) >> 4;
+			$v = new Vector3($X, $Y, $Z);
+			for($x = 0; $x < 16; ++$x){
+				for($z = 0; $z < 16; ++$z){
+					for($y = 0; $y < 8; ++$y){
+						$dist = $v->distance(new Vector3($x, $y, $z));
+						$d = $x . ":" . $y . ":" . $z;
+						if(!isset($this->chunksLoaded[$d])){
+							$this->chunksOrder[$d] = $dist;
+						}
+					}
+				}
+			}
+		}else{
+			$v = new Vector2($X, $Z);
+			for($x = 0; $x < 16; ++$x){
+				for($z = 0; $z < 16; ++$z){
+					$dist = $v->distance(new Vector2($x, $z));
+					for($y = 0; $y < 8; ++$y){
+						$d = $x . ":" . $y . ":" . $z;
+						if(!isset($this->chunksLoaded[$d])){
+							$this->chunksOrder[$d] = $dist;
+						}
 					}
 				}
 			}
 		}
+		
 		asort($this->chunksOrder);
 	}
 	
@@ -1255,7 +1275,6 @@ class Player{
 		if(EventHandler::callEvent(new DataPacketReceiveEvent($this, $packet)) === BaseEvent::DENY){
 			return;
 		}
-
 		switch($packet->pid()){
 			case 0x01:
 				break;
@@ -1309,7 +1328,7 @@ class Player{
 					$this->close("Incorrect protocol #" . $packet->protocol1, false);
 					return;
 				}
-				if(preg_match('#[^a-zA-Z0-9_]#', $this->username) > 0 or $this->username === "" or $this->iusername === "rcon" or $this->iusername === "console" or $this->iusername === "server"){
+				if(preg_match('#[^a-zA-Z0-9_]#', $this->username) > 0 || $this->username === "" || $this->iusername === "rcon" || $this->iusername === "console" || $this->iusername === "server" || strlen($this->iusername) > 16){
 					$this->close("Bad username", false);
 					return;
 				}
@@ -1490,9 +1509,11 @@ class Player{
 				}
 				break;
 			case ProtocolInfo::MOVE_PLAYER_PACKET:
+				
 				if($this->spawned === false){
 					break;
 				}
+				
 				if(($this->entity instanceof Entity) and $packet->messageIndex > $this->lastMovement){
 					$this->lastMovement = $packet->messageIndex;
 					$newPos = new Vector3($packet->x, $packet->y, $packet->z);
@@ -1524,7 +1545,7 @@ class Player{
 				$data["eid"] = $packet->eid;
 				$data["player"] = $this;
 
-				if($packet->slot === 0x28 or $packet->slot === 0){ //0 for 0.8.0 compatibility
+				if($packet->slot === 0){
 					$data["slot"] = -1;
 					$data["item"] = BlockAPI::getItem(AIR, 0, 0);
 					if($this->server->handle("player.equipment.change", $data) !== false){
@@ -1573,6 +1594,7 @@ class Player{
 				}
 				if($this->entity->inAction === true){
 					$this->entity->inAction = false;
+					$this->entity->inActionCounter = 0;
 					$this->entity->updateMetadata();
 				}
 				break;
@@ -1631,6 +1653,7 @@ class Player{
 				if($packet->face >= 0 and $packet->face <= 5){ //Use Block, place
 					if($this->entity->inAction === true){
 						$this->entity->inAction = false;
+						$this->entity->inActionCounter = 0;
 						$this->entity->updateMetadata();
 					}
 
@@ -1663,6 +1686,7 @@ class Player{
 					break;
 				}elseif($packet->face === 0xff and $this->server->handle("player.action", $data) !== false){
 					$this->entity->inAction = true;
+					$this->entity->inActionCounter = 0;
 					$this->startAction = microtime(true);
 					$this->entity->updateMetadata();
 				}
@@ -1692,13 +1716,34 @@ class Player{
 									$e->speedX = -sin(($e->yaw / 180) * M_PI) * cos(($e->pitch / 180) * M_PI);
 									$e->speedZ = cos(($e->yaw / 180) * M_PI) * cos(($e->pitch / 180) * M_PI);
 									$e->speedY = -sin(($e->pitch / 180) * M_PI);
-									$e->shoot($e->speedX, $e->speedY, $e->speedZ, 1.5, 1.0);
+									$e->shooterEID = $this->entity->eid;
+									$e->shotByEntity = true;
+									/**
+									 * Max usage: 72000ticks
+									 * initalPower = 72000 - (72000 - usedCtr)
+									 * power = initialPower / 20'
+									 * power = (power*power+power*2)/3
+									 * powerMax is 1, powerMin is 0.1
+									 * args: xvel, yvel, zvel, (power+power)*1.5, 1.0
+									 */
+									
+									$initalPower = $this->entity->inActionCounter;
+									$power = $initalPower / 20;
+									$power = ($power * $power + $power * 2) / 3;
+									if($power > 1.0) $power = 1;
+									elseif($power < 0.1){
+										//CANCEL but i am too lazy
+										$power = 0.1;
+									}
+									$e->critical = ($power === 1);
+									$e->shoot($e->speedX, $e->speedY, $e->speedZ, ($power+$power) * 1.5, 1.0);
 									$this->server->api->entity->spawnToAll($e);
 								}
 							}
 						}
 						$this->startAction = false;
 						$this->entity->inAction = false;
+						$this->entity->inActionCounter = 0;
 						$this->entity->updateMetadata();
 						break;
 					case 6: //get out of the bed
@@ -1758,6 +1803,7 @@ class Player{
 				$this->sendArmor();
 				if($this->entity->inAction === true){
 					$this->entity->inAction = false;
+					$this->entity->inActionCounter = 0;
 					$this->entity->updateMetadata();
 				}
 				break;
@@ -1823,6 +1869,7 @@ class Player{
 				$packet->eid = $this->eid;
 				if($this->entity->inAction === true){
 					$this->entity->inAction = false;
+					$this->entity->inActionCounter = 0;
 					$this->entity->updateMetadata();
 				}
 				switch($packet->event){
@@ -1888,6 +1935,7 @@ class Player{
 				}
 				if($this->entity->inAction === true){
 					$this->entity->inAction = false;
+					$this->entity->inActionCounter = 0;
 					$this->entity->updateMetadata();
 				}
 				break;
@@ -2139,6 +2187,27 @@ class Player{
 				}
 				break;
 			case ProtocolInfo::PLAYER_INPUT_PACKET:
+				if(strlen(bin2hex($packet->buffer)) === 24 && $this->entity->linkedEntity instanceof Entity){
+					$this->entity->linkedEntity->linkEntity($this->entity->linkedEntity, SetEntityLinkPacket::TYPE_RIDE);
+					$this->entity->linkedEntity->linkedEntity = false;
+					$this->entity->linkedEntity = false;
+				}
+				if($this->entity->linkedEntity instanceof Entity){
+					$pk = new SetEntityMotionPacket;
+					$pk->eid = $this->entity->linkedEntity->eid;
+					$pk->speedX = ($this->entity->x - $this->entity->linkedEntity->x)*30;
+					$pk->speedY = ($this->entity->y - $this->entity->linkedEntity->y)*30;
+					$pk->speedZ = ($this->entity->z - $this->entity->linkedEntity->z)*30;
+					foreach($this->level->players as $p){
+						if($p->entity->eid != $this->entity->eid){
+							$p->dataPacket(clone $pk);
+						}
+					}
+					
+					$this->entity->linkedEntity->setPosition($this->entity);
+					$this->entity->linkedEntity->sendMoveUpdate();
+				}
+				
 				break; //TODO player input-
 			default:
 				console("[DEBUG] Unhandled 0x" . dechex($packet->pid()) . " data packet for " . $this->username . " (" . $this->clientID . "): " . print_r($packet, true), true, true, 2);

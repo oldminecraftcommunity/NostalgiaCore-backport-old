@@ -2,6 +2,7 @@
 
 class EntityRegistry{ 
 	public static $entityList;
+	
 	/*Register all entities*/
 	public static function registerEntities(){
 		console("[INFO] Registering entities...");
@@ -27,6 +28,7 @@ class EntityRegistry{
 		$class = new \ReflectionClass($className);
 		if(is_a($className, Entity::class, true) and !$class->isAbstract()){
 			//self::$entityList[$className::TYPE] = $className;
+			
 			self::$entityList->addEntity(new PropertyEntity($className::CLASS_TYPE, $className::TYPE, $className));
 			//self::$shortNames[$className] = $class->getShortName(); what is this even supposed to do?
 			//console("[INFO] Registered a ".$className);

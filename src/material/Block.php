@@ -102,7 +102,7 @@ abstract class Block extends Position{
 			QUARTZ_STAIRS => "QuartzStairsBlock",
 			DOUBLE_WOOD_SLAB => "DoubleWoodSlabBlock",
 			WOOD_SLAB => "WoodSlabBlock",
-			
+
 			STONECUTTER => "StonecutterBlock",
 			GLOWING_OBSIDIAN => "GlowingObsidianBlock",
 			NETHER_REACTOR => "NetherReactorBlock",
@@ -131,9 +131,9 @@ abstract class Block extends Position{
 	public $y = 0;
 	public $z = 0;
 	public $slipperiness;
-
+	
 	public static function onRandomTick(Level $level, $x, $y, $z){}
-
+	public static function fallOn(Level $level, $x, $y, $z, Entity $entity, $fallDistance){}
 	public function __construct($id, $meta = 0, $name = "Unknown"){
 		$this->id = (int) $id;
 		$this->meta = (int) $meta;

@@ -35,7 +35,6 @@ define("SANDSTONE", 24);
 define("BED_BLOCK", 26);
 
 define("TALL_GRASS", 31);
-define("BUSH", 32);
 define("WOOL", 35);
 define("DANDELION", 37);
 define("ROSE", 38);
@@ -83,8 +82,10 @@ define("COBBLESTONE_STAIRS", 67);
 define("WALL_SIGN", 68);
 
 define("IRON_DOOR_BLOCK", 71);
+
 define("REDSTONE_ORE", 73);
 define("GLOWING_REDSTONE_ORE", 74);
+define("LIT_REDSTONE_ORE", 74);
 
 define("SNOW", 78);
 define("SNOW_LAYER", 78);
@@ -125,7 +126,12 @@ define("NETHER_BRICKS_STAIRS", 114);
 
 define("SANDSTONE_STAIRS", 128);
 
-define("COBBLE_WALL", 139);
+define("SPRUCE_WOOD_STAIRS", 134);
+define("SPRUCE_WOODEN_STAIRS", 134);
+define("BIRCH_WOOD_STAIRS", 135);
+define("BIRCH_WOODEN_STAIRS", 135);
+define("JUNGLE_WOOD_STAIRS", 136);
+define("JUNGLE_WOODEN_STAIRS", 136);
 
 define("QUARTZ_BLOCK", 155);
 define("QUARTZ_STAIRS", 156);

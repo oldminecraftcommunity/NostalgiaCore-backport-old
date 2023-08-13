@@ -1,8 +1,8 @@
 <?php
 
-class AnimatePacket extends RakNetDataPacket{ //is it even needed in 0.7? ._.
+class AnimatePacket extends RakNetDataPacket{
 	/**
-	 * Minecart Hurt, Swing Hand
+	 * Swing Hand
 	 */
 	const ANIM_1 = 0x1;
 	

@@ -14,7 +14,7 @@ class NoiseGeneratorOctaves extends NoiseGenerator{
 			$this->generatorCollection[$o] = new NoiseGeneratorPerlin($random);
 		}
 	}
-
+	
 	public function getValue($x, $y){
 		$noise = 0;
 		$scale = 1;
@@ -24,14 +24,13 @@ class NoiseGeneratorOctaves extends NoiseGenerator{
 		}
 		return $noise;
 	}
-
+	
 	public function generateNoiseOctaves($int1, $int2, $int3, $int4, $int5, $int6, $par1 = false, $par2 = false, $par3 = false){
 		if($par1 === false or $par2 === false or $par3 === false){
 			return $this->generateNoiseOctaves($int1, 10, $int2, $int3, 1, $int4, $int5, 1, $int6);
 		}
 		
 		$floats = array_fill(0, $int4 * $int5 * $int6, 0);
-		
 		$d1 = 1;
 		
 		for($j = 0; $j < $this->octaves; ++$j){

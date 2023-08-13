@@ -18,6 +18,11 @@ class TaskTempt extends TaskBase
 
 	public function onUpdate(EntityAI $ai)
 	{
+		if(!($this->target instanceof Entity) || ($this->target instanceof Entity && !$this->target->isPlayer()) || (Utils::distance_noroot($this->target, $ai->entity) > 100) || !$ai->entity->isFood($this->target->player->getHeldItem()->getID()) || $this->target->level->getName() != $ai->entity->level->getName()){
+			$this->reset();
+			return;
+		}
+		
 		$ai->mobController->moveTo($this->target->x, floor($ai->entity->y), $this->target->z);
 		$ai->mobController->lookOn($this->target);
 	}
@@ -27,6 +32,14 @@ class TaskTempt extends TaskBase
 		if(!($ai->entity instanceof Breedable) || $ai->entity->inPanic){ //TODO Work with path
 			return false;
 		}
+		$target = $this->findTarget($ai->entity, 10);
+		if($target instanceof Entity && $target->class === ENTITY_PLAYER && $target->isPlayer() && $ai->entity->isFood($target->player->getHeldItem()->getID())){
+			$this->target = $target;
+			$ai->entity->target = $target;
+			return true;
+		}
+		
+		return false;
 	}
 	
 	protected function findTarget($e, $r){

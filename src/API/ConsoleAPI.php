@@ -2,9 +2,8 @@
 
 class ConsoleAPI{
 
-	public $last;
 	private $loop, $server, $event, $help, $cmds, $alias;
-
+	public $last;
 	function __construct(){
 		$this->help = [];
 		$this->cmds = [];
@@ -23,6 +22,9 @@ class ConsoleAPI{
 		$this->register("difficulty", "<0|1|2|3>", [$this, "defaultCommands"]);
 		$this->register("stop", "", [$this, "defaultCommands"]);
 		$this->register("defaultgamemode", "<mode>", [$this, "defaultCommands"]);
+
+		$this->server->api->console->alias("tps", "status");
+  
 		$this->cmdWhitelist("help");
 		$this->cmdWhitelist("status");
 	}
@@ -209,11 +211,11 @@ class ConsoleAPI{
 				break;
 			case "status":
 				if(!($issuer instanceof Player) and $issuer === "console"){
-					$this->server->debugInfo(true);
+					$info = $this->server->debugInfo(true);
+				}else{
+					$info = $this->server->debugInfo();
 				}
-				$info = $this->server->debugInfo();
-				$output .= "TPS: " . $info["tps"] . ", Memory usage: " . $info["memory_usage"] . " (Peak " . $info["memory_peak_usage"] . ")\n";
-				break;
+				return "TPS: " . $info["tps"] . ", Memory usage: " . $info["memory_usage"] . " (Peak " . $info["memory_peak_usage"] . ")";
 			case "stop":
 				$this->loop->stop = true;
 				$output .= "Stopping the server\n";
@@ -226,8 +228,7 @@ class ConsoleAPI{
 					break;
 				}
 				$this->server->api->setProperty("difficulty", (int) $s);
-				$output .= "Difficulty changed to " . $this->server->difficulty . "\n";
-				break;
+				return "Difficulty changed to " . $this->server->difficulty . "\n";
 			case "?":
 				if($issuer !== "console" and $issuer !== "rcon"){
 					break;

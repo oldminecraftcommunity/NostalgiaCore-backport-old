@@ -7,7 +7,6 @@ class Entity extends Position
 	const CLASS_TYPE = - 1;
 	
 	public $counter = 0;
-
 	public $fallDistance = 0;
 	public static $updateOnTick, $allowedAI;
 	public $isCollidable;
@@ -71,6 +70,7 @@ class Entity extends Position
 	public $random;
 	public $radius;
 	public $inAction = false;
+	public $inActionCounter = 0;
 	public $hasKnockback;
 	public $hasJumped;
 	public $invincible, $crouched, $fire, $health, $status;
@@ -137,8 +137,8 @@ class Entity extends Position
 				$this->player = $this->data["player"];
 				$this->setHealth($this->health, "generic");
 				$this->speedModifer = 1;
-				$this->width = 1.4; //original nc numbers (just wonder is it true for 0.7???)
-				$this->height = 1.85;
+				$this->width = 0.6;
+				$this->height = 1.8;
 				$this->hasKnockback = true;
 				$this->hasGravity = true;
 				$this->canBeAttacked = true;
@@ -244,7 +244,8 @@ class Entity extends Position
 	 *			Entity instance or EID
 	 * @return number|false if failed
 	 */
-	public static function getWidthOf($e){
+	public static function getWidthOf($e)
+	{
 		if($e instanceof Entity){
 			return $e->getWidth();
 		} elseif(($e = ServerAPI::request()->api->entity->get($e)) != false){
@@ -258,7 +259,8 @@ class Entity extends Position
 	 *
 	 * @return number
 	 */
-	public function getHeight(){ //btw we need syntax fix in entire core
+	public function getHeight()
+	{
 		return $this->height;
 	}
 
@@ -399,15 +401,34 @@ class Entity extends Position
 		$endY = ceil($this->boundingBox->maxY);
 		$endZ = ceil($this->boundingBox->maxZ);
 		$waterDone = false;
+		//$bup = new AxisAlignedBB($startX, $startY + 1, $startZ, $endX, $endY, $endZ);
+		
+		for($i = 0; $i < 8; ++$i){
+			$x = ((($i >> 0) % 2) - 0.5) * $this->width * 0.8;
+			$y= ((($i >> 1) % 2) - 0.5) * 0.1;
+			$z = ((($i >> 2) % 2) - 0.5) * $this->width * 0.8;
+			
+			$blockX = (int) ($this->x + $x);
+			$blockY = (int) ($this->y + $this->getEyeHeight() + $y);
+			$blockZ = (int) ($this->z + $z);
+			
+			if(!StaticBlock::getIsTransparent($this->level->level->getBlockID($blockX, $blockY, $blockZ))){
+				$this->harm(1, "suffocation"); // Suffocation
+				$hasUpdate = true;
+				break;
+			}
+		}
+		
 		for ($y = $startY; $y <= $endY; ++$y){
 			for ($x = $startX; $x <= $endX; ++$x){
 				for ($z = $startZ; $z <= $endZ; ++$z){
-					$pos = new Vector3($x, $y, $z);
-					$b = $this->level->getBlock($pos);
-					switch ($b->getID()) {
+					$b = $this->level->level->getBlock($x, $y, $z);
+					$id = $b[0];
+					$meta = $b[1];
+					switch ($id) {
 						case WATER:
 						case STILL_WATER: // Drowing
-							if ($this->fire > 0 and $this->inBlock($pos)) {
+							if ($this->fire > 0 and $this->inBlockNonVector($x, $y, $z)) {
 								$this->fire = 0;
 								$this->updateMetadata();
 							}
@@ -415,7 +436,7 @@ class Entity extends Position
 								$this->harm(2, "water");
 								$hasUpdate = true;
 								$waterDone = true;
-							} elseif ($x == ($endX - 1) and $y == $endY and $z == ($endZ - 1 - (($b->getMetadata() % 8) / 9)) and ($this->class === ENTITY_MOB or $this->class === ENTITY_PLAYER) and !$waterDone) {
+							} elseif ($x == ($endX - 1) and $y == $endY and $z == ($endZ - 1 - (($meta % 8) / 9)) and ($this->class === ENTITY_MOB or $this->class === ENTITY_PLAYER) and !$waterDone) {
 								$this->air -= 1;
 								$waterDone = true;
 								$this->updateMetadata();
@@ -424,7 +445,7 @@ class Entity extends Position
 							break;
 						case LAVA: // Lava damage
 						case STILL_LAVA:
-							if ($this->inBlock($pos)) {
+							if ($this->inBlockNonVector($x, $y, $z)) {
 								$this->harm(5, "lava");
 								$this->fire = 300;
 								$this->updateMetadata();
@@ -432,7 +453,7 @@ class Entity extends Position
 							}
 							break;
 						case FIRE: // Fire block damage
-							if ($this->inBlock($pos)) {
+							if ($this->inBlockNonVector($x, $y, $z)) {
 								$this->harm(1, "fire");
 								$this->fire = 300;
 								$this->updateMetadata();
@@ -440,19 +461,19 @@ class Entity extends Position
 							}
 							break;
 						case CACTUS: // Cactus damage
-							if ($this->touchingBlock($pos)) {
+							if ($this->inBlockNonVector($x, $y, $z)) {
 								$this->harm(1, "cactus");
 								$hasUpdate = true;
 							}
 							break;
 						default:
-							if ($this->inBlock($pos, $this->radius) and $y == $endY and !$b->isTransparent and ($this->class === ENTITY_MOB or $this->class === ENTITY_PLAYER)) {
-								$this->harm(1, "suffocation"); // Suffocation
-								$hasUpdate = true;
-							} elseif ($x == ($endX - 1) and $y == $endY and $z == ($endZ - 1)) {
-								$this->air = 200; // Breathing
+							if($this->inBlockNonVector($x, $y, $z, 0.7) && $y == $endY and !StaticBlock::getIsTransparent($id) && ($this->class === ENTITY_MOB || $this->class === ENTITY_PLAYER)){
+								
+							}elseif($x == ($endX - 1) and $y == $endY and $z == ($endZ - 1)){
+								$this->air = 200;
 							}
 							break;
+							
 					}
 				}
 			}
@@ -469,9 +490,11 @@ class Entity extends Position
 
 	
 	public function update(){
+
 		if($this->closed === true){
 			return false;
 		}
+		
 		$now = microtime(true);
 		if($this->check === false){
 			$this->lastUpdate = $now;
@@ -491,46 +514,6 @@ class Entity extends Position
 		}
 		++$this->counter;
 		if($this->isStatic === false){
-			$startX = floor($this->x - 0.5 - $this->width - 1);
-			// prefix for flying when player on fence
-			$y = floor($this->y - 1);
-			$yC = ceil($this->y - 1);
-			$startZ = floor($this->z - 0.5 - $this->width - 1);
-			$endX = ceil($this->x - 0.5 + $this->width + 1);
-			$endZ = ceil($this->z - 0.5 + $this->width + 1);
-			$support = false;
-			$isFlying = true;
-			
-			if($this->isPlayer()){
-				for($z = $startZ; $z <= $endZ; ++ $z){
-					for($x = $startX; $x <= $endX; ++ $x){
-						$v = new Vector3($x, $y, $z);
-						$v1 = new Vector3($x, $yC, $z);
-						if($this->isSupport($v, $this->width)){
-							$b = $this->level->getBlock($v);
-							if($b->isSolid === true){
-								$support = true;
-								$isFlying = false;
-								break;
-							} elseif(($b instanceof LiquidBlock)or $b->getID() === LADDER or $b->getID() === FENCE){
-								$isFlying = false;
-							}
-						} elseif($this->isSupport($v1, $this->width)){
-							$b = $this->level->getBlock($v1);
-							if($b->isSolid === true){
-								$support = true;
-								$isFlying = false;
-								break;
-							} elseif(($b instanceof LiquidBlock)or $b->getID() === LADDER or $b->getID() === FENCE){
-								$isFlying = false;
-							}
-						}
-					}
-					if($support === true){
-						break;
-					}
-				}
-			}
 			if(!$this->isPlayer()){
 				$update = false;
 				if(Utils::in_range($this->speedX, -0.01, 0.01)){
@@ -552,27 +535,22 @@ class Entity extends Position
 					$y1 = ceil($aABB->maxY);
 					$z0 = floor($aABB->minZ);
 					$z1 = ceil($aABB->maxZ);
+					
 					$ywMin = floor($aABB->minY + 0.4);
 					$ywMax = ceil($aABB->maxY - 0.4);
-					$x0 = $x0 < 0 ? 0 : $x0;
-					$y0 = $y0 < 0 ? 0 : $y0;
-					$z0 = $z0 < 0 ? 0 : $z0;
-					$x1 = $x1 > 256 ? 256 : $x1;
-					$y1 = $y1 > 128 ? 128 : $y1;
-					$z1 = $z1 > 256 ? 256 : $z1;
 					for($x = $x0; $x < $x1; ++$x){
 						for($y = $y0; $y < $y1; ++$y){
 							for($z = $z0; $z < $z1; ++$z){
-								$pos = new Vector3($x, $y, $z);
-								$b = $this->level->getBlock($pos);
-								if(($b->getID() === WATER || $b->getID() === STILL_WATER)){
-									$water = $b->y == ($y1 - 1);
+								$b = $this->level->level->getBlockID($x, $y, $z);
+								if(($b === WATER || $b === STILL_WATER)){
+									$water = $y == ($y1 - 1);
 									$this->fallDistance = 0;
 								}
-								if($b != false && $b->isSolid){
-									$this->speedY = $b->boundingBox->calculateYOffset($this->boundingBox, $this->speedY);
-									$this->speedX = $b->boundingBox->calculateXOffset($this->boundingBox, $this->speedX);
-									$this->speedZ = $b->boundingBox->calculateZOffset($this->boundingBox, $this->speedZ);
+								if(StaticBlock::getIsSolid($b)){
+									$blockBounds = StaticBlock::getBoundingBoxForBlockCoords($b, $x, $y, $z);
+									$this->speedY = $blockBounds->calculateYOffset($this->boundingBox, $this->speedY);
+									$this->speedX = $blockBounds->calculateXOffset($this->boundingBox, $this->speedX);
+									$this->speedZ = $blockBounds->calculateZOffset($this->boundingBox, $this->speedZ);
 								}
 							}
 						}
@@ -584,9 +562,9 @@ class Entity extends Position
 				$horizontalMultiplyFactor = 0.91;
 				if($support){
 					$horizontalMultiplyFactor = 0.54;
-					$b = $this->level->getBlockWithoutVector(floor($this->x), floor($this->boundingBox->minX) - 1, floor($this->z));
-					if($b instanceof Block){
-						$horizontalMultiplyFactor = $b->slipperiness * 0.91;
+					$b = $this->level->level->getBlockID(floor($this->x), floor($this->boundingBox->minX) - 1, floor($this->z));
+					if($b > 0){
+						$horizontalMultiplyFactor = StaticBlock::getSlipperiness($b) * 0.91;
 					}
 				}
 				if($this->inWater){
@@ -612,8 +590,8 @@ class Entity extends Position
 						$x = (int) ($this->x - 0.5);
 						$z = (int) ($this->z - 0.5);
 						$lim = (int) floor($ny);
-						for($y = (int) ceil($this->y) - 1; $y >= $lim; -- $y){
-							if($this->level->getBlockWithoutVector($x, $y, $z)->isSolid === true){
+						for($y = floor($this->y); $y >= $lim; --$y){
+							if(StaticBlock::getIsSolid($this->level->level->getBlockID($x, $y, $z))){
 								//$support = true;
 								$this->y = $ny;
 								$fall = $this->level->getBlock(new Vector3(intval($this->x - 0.5), intval(ceil($this->y)), intval($this->z - 0.5)));
@@ -634,7 +612,7 @@ class Entity extends Position
 					$update = true;
 				}
 				$this->onGround = $support;
-				
+
 				
 				if($this->hasGravity){
 					$this->speedY -= $this->inWater ? 0.02 : ($this->gravity); // TODO: replace with $gravity
@@ -657,55 +635,66 @@ class Entity extends Position
 				}
 				$this->updateFallState($this->speedY);
 			} elseif($this->player instanceof Player){
-				if($isFlying === true and ($this->player->gamemode & 0x01) === 0x00){
-					if($this->fallY === false or $this->fallStart === false){
-						$this->fallY = $y;
-						$this->fallStart = microtime(true);
-					} elseif($this->class === ENTITY_PLAYER and ($this->fallStart + 5) < microtime(true)){
-						if($this->server->api->getProperty("allow-flight") !== true and $this->server->handle("player.flying", $this->player) !== true and $this->isRiding === false){
-							$this->player->close("flying");
-							return;
-						}
-					} elseif($y > $this->fallY){
-						$this->fallY = $y;
-					}
-				} elseif($this->fallY !== false){ // Fall damage!
-					if($y < $this->fallY){
-						$blockToFallOn = $this->level->getBlock(new Vector3($x, $y, $z));
-						if($blockToFallOn->getID() === FARMLAND){
-							$this->level->setBlock($blockToFallOn, new DirtBlock(), true, false, true);
-						}
-
-						$d = $this->level->getBlock(new Vector3($x, $y + 1, $z));
-						$d2 = $this->level->getBlock(new Vector3($x, $y + 2, $z));
-						$dmg = ($this->fallY - $y) - 3;
-						if($dmg > 0 and ! ($d instanceof LiquidBlock) and $d->getID() !== LADDER and ! ($d2 instanceof LiquidBlock) and $d2->getID() !== LADDER){
-							$this->harm($dmg, "fall");
+				$prevGroundState = $this->onGround;
+				$this->onGround = false;
+				$this->speedX = -($this->lastX - $this->x);
+				$this->speedY = -($this->lastY - $this->y);
+				$this->speedZ = -($this->lastZ - $this->z);
+				for($x = floor($this->boundingBox->minX); $x < ceil($this->boundingBox->maxX); ++$x){
+					for($z = floor($this->boundingBox->minZ); $z < ceil($this->boundingBox->maxZ); ++$z){
+						for($y = floor($this->boundingBox->minY - 1); $y < ceil($this->boundingBox->maxY); ++$y){
+							if($y <= floor($this->boundingBox->minY) && !$this->onGround){
+								$this->onGround = StaticBlock::getIsSolid($this->level->level->getBlockID($x, $y, $z));
+							}else{
+								$block = $this->level->level->getBlock($x, $y, $z);
+								$id = $block[0];
+								$meta = $block[1];
+								if($id === WATER || $id === STILL_WATER){
+									$this->fallDistance = 0;
+									$this->fallStart = $this->y;
+								}
+							}
+							
 						}
 					}
-					$this->fallY = false;
-					$this->fallStart = false;
 				}
-				$this->calculateVelocity();
-				if($this->speed <= 9 or ($this->speed <= 20 and ($this->player->gamemode & 0x01) === 0x01)){
-					$this->player->lastCorrect = new Vector3($this->last[0], $this->last[1], $this->last[2]);
+				
+				if($this->isOnLadder()){
+					$this->fallDistance = 0;
+					$this->fallStart = $this->y;
 				}
+				
+				if(!$this->onGround && ($prevGroundState /*|| $this->y > $this->fallStart*/)){
+					$this->fallStart = $this->y;
+				}
+				//if($prevGroundState != $this->onGround){
+				//	$this->player->sendChat("I am now" . ($this->onGround ? 'on Ground' : 'not on Ground')." and fd: ".$this->fallDistance);
+				//}
+				$this->updateFallState(Utils::getSign($this->speedY)*0.1);
+				if($this->onGround) $this->fallDistance = 0;
+				$hasUpdate = true;
 			}
 		}
+		
+		
 		if($this->knockbackTime > 0){
 			--$this->knockbackTime;
 		}
-		
 		if($this->moveTime > 0){
-			-- $this->moveTime;
+			--$this->moveTime;
 		}
 		if($this->lookTime > 0){
-			-- $this->lookTime;
+			--$this->lookTime;
 		}
 		if($this->idleTime > 0){
-			-- $this->idleTime;
+			--$this->idleTime;
 		}
-
+		
+		
+		if($this->inAction){
+			++$this->inActionCounter;
+		}
+		
 		if($this->class !== ENTITY_PLAYER && $update){
 			$this->updateMovement();
 		}
@@ -714,8 +703,37 @@ class Entity extends Position
 		$this->lastUpdate = $now;
 	}
 	
-	public function fall(){}
-
+	public function isOnLadder(){
+		$x = (int)$this->x;
+		$y = (int)$this->boundingBox->minY;
+		$z = (int)$this->z;
+		return $this->level->level->getBlockID($x, $y, $z) === LADDER;
+	}
+	
+	public function fall(){
+		if($this->isPlayer()){
+			
+			$x = floor($this->x);
+			$y = floor($this->y - 0.2);
+			$z = floor($this->z);
+			$bid = $this->level->level->getBlockID($x, $y, $z);
+			
+			if($bid > 0){
+				$clz = StaticBlock::getBlock($bid);
+				$clz::fallOn($this->level, $x, $y, $z, $this, floor($this->fallStart - $this->y));
+			}
+			
+			$dmg = floor($this->fallStart - $this->y) - 3;
+			if($dmg > 0){
+				$this->harm($dmg, "fall");
+			}
+		}
+	}
+	
+	public function canBeShot(){
+		return $this->isPlayer();
+	}
+	
 	public function updateFallState($fallTick){
 		if($this->onGround && $this->fallDistance > 0){
 			$this->fall();
@@ -723,9 +741,9 @@ class Entity extends Position
 		}elseif($fallTick < 0){
 			$this->fallDistance -= $fallTick;
 		}
-
+		
 	}
-
+	
 	public function updateMovement()
 	{
 		if($this->closed === true){
@@ -770,9 +788,7 @@ class Entity extends Position
 				$this->updateLast();
 			}
 			
-			
 		}
-
 		$this->lastUpdate = $now;
 	}
 	
@@ -831,8 +847,8 @@ class Entity extends Position
 		}
 	}
 
-	/*
-	 * METADATA VALUES(EXPEREMENTAL)
+	/**
+	 * METADATA VALUES
 	 * *****************
 	 * Types: Get input type of <value>
 	 * 0 -> Byte
@@ -853,7 +869,6 @@ class Entity extends Position
 	 * DATA FLAGS IDS
 	 * 0 - fire
 	 * 1 - crouching
-	 * 2 - riding <?> - no idea why doesnt it work
 	 * 4 - inAction(ex.: using a bow)
 	 */
 	public function getMetadata()
@@ -1045,7 +1060,10 @@ class Entity extends Position
 
 	public function updateAABB()
 	{
-		$this->boundingBox->setBounds($this->x - $this->radius, $this->y, $this->z - $this->radius, $this->x + $this->radius, $this->y + $this->height, $this->z + $this->radius);
+		$this->boundingBox->setBounds(
+			$this->x - $this->radius, $this->y, $this->z - $this->radius, 
+			$this->x + $this->radius, $this->y + $this->height, $this->z + $this->radius
+		);
 	}
 
 	public function updatePosition()
@@ -1085,7 +1103,10 @@ class Entity extends Position
 		$this->server->preparedSQL->entity->setPosition->bindValue(":eid", $this->eid, SQLITE3_INTEGER);
 		$this->server->preparedSQL->entity->setPosition->execute();
 	}
-
+	public function inBlockNonVector($x, $y, $z, $radius = 0.8)
+	{
+		return $y == ceil($this->y) || $y == (ceil($this->y)+1) && max(abs($x - ($this->x-0.5)), abs($z - ($this->z-0.5)));
+	}
 	public function inBlock(Vector3 $block, $radius = 0.8)
 	{
 		$me = new Vector3($this->x - 0.5, $this->y, $this->z - 0.5);
@@ -1116,15 +1137,7 @@ class Entity extends Position
 
 	public function resetSpeed()
 	{
-		$this->speedMeasure = array(
-			0,
-			0,
-			0,
-			0,
-			0,
-			0,
-			0
-		);
+		$this->speedMeasure = array(0, 0, 0, 0, 0, 0, 0);
 	}
 
 	public function getSpeed()
@@ -1217,8 +1230,8 @@ class Entity extends Position
 		if ($ret != false && $this->hasKnockback && is_numeric($cause) && ($entity = $this->server->api->entity->get($cause)) != false) {
 			$d = $entity->x - $this->x;
 
-			for ($d1 = $entity->z - $this->z; $d * $d + $d1 * $d1 < 0.0001; $d1 = (Utils::randomFloat() - Utils::randomFloat()) * 0.01) {
-				$d = (Utils::randomFloat() - Utils::randomFloat()) * 0.01;
+			for ($d1 = $entity->z - $this->z; $d * $d + $d1 * $d1 < 0.0001; $d1 = (lcg_value() - lcg_value()) * 0.01) {
+				$d = (lcg_value() - lcg_value()) * 0.01;
 			}
 			// attackedAtYaw = (float)((Math.atan2($d1, $d) * 180D) / 3.1415927410125732D) >
 			$this->knockBack($d, $d1);
@@ -1260,6 +1273,8 @@ class Entity extends Position
 	public function linkEntity(Entity $e, $type)
 	{
 		//if($e->isPlayer()){
+		$this->linkedEntity = $e;
+		$e->linkedEntity = $this;
 		$this->server->api->dhandle("entity.link", ["rider" => $e->eid, "riding" => $this->eid, "type" => 0]);
 		//}
 	}
@@ -1428,9 +1443,9 @@ class Entity extends Position
 		$f1 = 0.4;
 		$this->speedX /= 2;
 		$this->speedZ /= 2;
-		$this->speedX -= ($d / (double) $f) * (double) $f1;
+		$this->speedX -= ($d / $f) * $f1;
 		$this->speedY += 0.40000000596046448;
-		$this->speedZ -= ($d1 / (double) $f) * (double) $f1;
+		$this->speedZ -= ($d1 / $f) * $f1;
 		if($this->speedY > 0.40000000596046448){
 			$this->speedY = 0.40000000596046448;
 		}

@@ -15,29 +15,39 @@ class FarmlandBlock extends TransparentBlock{
 		$b = $this->getSide(1);
 		return $b->isTransparent && $b->id != 0;
 	}
-
-	public static function onRandomTick(Level $level, $x, $y, $z){
-		$meta = $level->level->getBlockDamage($x, $y, $z);
-		$b = $level->getBlockWithoutVector($x, $y + 1, $z, $level, false);
-		if($meta === 0 && mt_rand(0, 5) === 0){
-			$water = self::checkWaterStatic($level, $x, $y, $z);
-			if($water){
-				$level->setBlock(new Position($x, $y, $z, $level), BlockAPI::get(FARMLAND, 1), true, false, true);
-			}elseif(!(($b instanceof Block) && $b->isTransparent && $b->id != 0)){
-				$level->setBlock(new Position($x, $y, $z, $level), BlockAPI::get(DIRT, 0), true, false, true);
-			}
-		}
-		if($b instanceof Block && !$b->isFlowable){
-			$level->setBlock(new Position($x, $y, $z, $level), BlockAPI::get(DIRT, 0), true, false, true);
+	
+	public static function fallOn(Level $level, $x, $y, $z, Entity $entity, $fallDistance){
+		$rv = lcg_value();
+		console("rv: $rv, fd: ".($fallDistance - 0.5));
+		if($rv < ($fallDistance - 0.5)){
+			$level->fastSetBlockUpdate($x, $y, $z, DIRT, 0);
 		}
 	}
+	
+	public static function onRandomTick(Level $level, $x, $y, $z){
+		$meta = $level->level->getBlockDamage($x, $y, $z);
+		$b = $level->level->getBlockID($x, $y + 1, $z);
+		if(!StaticBlock::getIsFlowable($b)){
+			$level->fastSetBlockUpdate($x, $y, $z, DIRT, 0, true);
+		}else if($meta === 0 && mt_rand(0, 5) === 0){
+			$water = self::checkWaterStatic($level, $x, $y, $z);
+			if($water){
+				$level->fastSetBlockUpdate($x, $y, $z, FARMLAND, 1, true);
+			}elseif($b != 0 && StaticBlock::getIsTransparent($b)){
+				$level->fastSetBlockUpdate($x, $y, $z, DIRT, 0, true);
+			}
+		}
+		
+		
+	}
 
-	public static function checkWaterStatic(Level $level, $x, $y, $z){
-		for($bx = $x - 4; $bx <= $x + 4; $bx++){
-			for($by = $y; $by <= $y + 1; $by++){
-				for($bz = $z - 4; $bz <= $z + 4; $bz++){
+	public static function checkWaterStatic(Level $level, $x, $y, $z)
+	{
+		for ($bx = $x - 4; $bx <= $x + 4; $bx++) {
+			for ($by = $y; $by <= $y + 1; $by++) {
+				for ($bz = $z - 4; $bz <= $z + 4; $bz++) {
 					$id = $level->level->getBlockID($bx, $by, $bz);
-					if($id === 8 || $id === 9){
+					if ($id === 8 || $id === 9) {
 						return true;
 					}
 				}
@@ -54,11 +64,10 @@ class FarmlandBlock extends TransparentBlock{
 		}
 		return false;
 	}
-		
 
 	public function getBlockID($x, $y, $z){
 		return $this->level->level->getBlockID($x, $y, $z); //PMFLevel method
-}
+	}
 
 	public function checkWater(){
 

@@ -15,7 +15,6 @@ class MelonStemBlock extends FlowableBlock{
 			}
 		return false;
 	}
-
 	public static function onRandomTick(Level $level, $x, $y, $z){
 		if(mt_rand(0, 2) == 1){
 			$block = $level->level->getBlock($x, $y, $z);
@@ -24,7 +23,7 @@ class MelonStemBlock extends FlowableBlock{
 				//$this->level->setBlock($this, $this, true, false, true);
 				$level->fastSetBlockUpdate($x, $y, $z, $block[0], $block[1] + 1);
 			}else{
-
+				
 				$position = new AirBlock(); //feke block
 				$position->x = $x;
 				$position->y = $y;
@@ -44,7 +43,6 @@ class MelonStemBlock extends FlowableBlock{
 			}
 		}
 	}
-
 	public function onUpdate($type){
 		if($type === BLOCK_UPDATE_NORMAL){
 			if($this->getSide(0)->getID() != 60){

@@ -11,7 +11,7 @@ class PocketMinecraftServer{
 	private $serverip, $evCnt, $handCnt, $events, $eventsID, $handlers, $serverType, $lastTick, $memoryStats, $async = [], $asyncID = 0;
 	
 	public $doTick, $levelData, $tiles, $entities, $schedule, $scheduleCnt, $whitelist, $spawn, $difficulty, $stop, $asyncThread;
-
+	
 	function __construct($name, $gamemode = SURVIVAL, $seed = false, $port = 19132, $serverip = "0.0.0.0"){
 		$this->port = (int) $port;
 		$this->doTick = true;
@@ -24,6 +24,9 @@ class PocketMinecraftServer{
 		$this->load();
 	}
 	
+	public static $SAVE_PLAYER_DATA = true;
+	
+	
 	private function load(){
 		global $dolog;
 
@@ -35,6 +38,7 @@ class PocketMinecraftServer{
 		EntityRegistry::registerEntities();
 		Feature::init();
 		Biome::init();
+		StaticBlock::init();
 		define("BOOTUP_RANDOM", Utils::getRandomBytes(16));
 		$this->serverID = $this->serverID === false ? Utils::readLong(substr(Utils::getUniqueID(true, $this->serverip . $this->port), 8)) : $this->serverID;
 		$this->seed = $this->seed === false ? Utils::readInt(Utils::getRandomBytes(4, false)) : $this->seed;
@@ -70,7 +74,6 @@ class PocketMinecraftServer{
 		if(!defined("NO_THREADS")){
 			$this->asyncThread = new AsyncMultipleQueue();
 		}
-		
 		console("[INFO] Loading extra.properties...");
 		$this->extraprops = new Config(DATA_PATH . "extra.properties", CONFIG_PROPERTIES, [
 			"version" => "5",
@@ -87,11 +90,15 @@ class PocketMinecraftServer{
 			"discord-bot-name" => "NostalgiaCore Logger",
 			"despawn-mobs" => true, 
 			"mob-despawn-ticks" => 18000,
+			"16x16x16_chunk_sending" => false
+			
 		]);
+		Player::$smallChunks = $this->extraprops->get("16x16x16_chunk_sending");
 		Living::$despawnMobs = $this->extraprops->get("despawn-mobs");
 		Living::$despawnTimer = $this->extraprops->get("mob-despawn-ticks");
 		Entity::$allowedAI = $this->extraprops->get("enable-mob-ai");
 		Entity::$updateOnTick = $this->extraprops->get("experemental-mob-features");
+		PocketMinecraftServer::$SAVE_PLAYER_DATA = $this->extraprops->get("save-player-data");
 		if(Entity::$updateOnTick){
 			console("[WARNING] Experemental mob features are enabled. Unpredictable behavior.");
 		}
@@ -210,11 +217,15 @@ class PocketMinecraftServer{
 			$this->interface->close();
 
 			if(!defined("NO_THREADS")){
-				@$this->asyncThread->stop = true;
+				$this->asyncThread->synchronized(function ($t){
+					$t->stop = true;
+					$t->notify();
+				}, $this->asyncThread);
+				//@$this->asyncThread->stop = true;
 			}
 		}
 	}
-
+	
 	public function send2Discord($msg){
 		if($this->extraprops->get("discord-msg") == true and $this->extraprops->get("discord-webhook-url") !== "none"){
 			$url = $this->extraprops->get("discord-webhook-url");
@@ -417,6 +428,7 @@ class PocketMinecraftServer{
 			pcntl_signal(SIGINT, [$this, "close"]);
 			pcntl_signal(SIGHUP, [$this, "close"]);
 		}
+		
 		console("[INFO] Default game type: " . strtoupper($this->getGamemode()));
 		$this->trigger("server.start", microtime(true));
 		console('[INFO] Done (' . round(microtime(true) - START_TIME, 3) . 's)! For help, type "help" or "?"');
@@ -597,11 +609,11 @@ class PocketMinecraftServer{
 				$this->preparedSQL->updateAction->bindValue(":time", $time, SQLITE3_FLOAT);
 				$this->preparedSQL->updateAction->bindValue(":id", $cid, SQLITE3_INTEGER);
 				$this->preparedSQL->updateAction->execute();
-				if(!isset($this->schedule[$cid]) || !isset($this->schedule[$cid][0]) || !@is_callable($this->schedule[$cid][0])){
-					$return = false;
-				}else{
+				if(isset($this->schedule[$cid]) && is_array($this->schedule[$cid]) && isset($this->schedule[$cid][0]) && is_callable($this->schedule[$cid][0])){
 					++$actionCount;
 					$return = call_user_func($this->schedule[$cid][0], $this->schedule[$cid][1], $this->schedule[$cid][2]);
+				}else{
+					$return = false;
 				}
 
 				if($action["repeat"] == 0 or $return === false){
@@ -716,7 +728,7 @@ class PocketMinecraftServer{
 		$info["garbage"] = gc_collect_cycles();
 		$this->handle("server.debug", $info);
 		if($console === true){
-			console("[DEBUG] TPS: " . $info["tps"] . ", Memory usage: " . $info["memory_usage"] . " (Peak " . $info["memory_peak_usage"] . "), Entities: " . $info["entities"] . ", Events: " . $info["events"] . ", Handlers: " . $info["handlers"] . ", Actions: " . $info["actions"] . ", Garbage: " . $info["garbage"], true, true, 2);
+			console("[INFO] TPS: " . $info["tps"] . ", Memory usage: " . $info["memory_usage"] . " (Peak " . $info["memory_peak_usage"] . "), Entities: " . $info["entities"] . ", Events: " . $info["events"] . ", Handlers: " . $info["handlers"] . ", Actions: " . $info["actions"] . ", Garbage: " . $info["garbage"], true, true);
 		}
 		return $info;
 	}

@@ -1,6 +1,7 @@
 <?php
 
-class ForestBiome extends Biome{
+class ForestBiome extends Biome
+{
 	public function getTreeFeature(MersenneTwister $rand){
 		if($rand->nextInt(5) == 0){
 			return Feature::$BIRCH_TREE;
@@ -9,3 +10,4 @@ class ForestBiome extends Biome{
 		return Feature::$TREE;
 	}
 }
+

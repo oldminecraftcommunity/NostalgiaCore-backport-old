@@ -5,11 +5,9 @@ class GlowingRedstoneOreBlock extends SolidBlock implements LightingBlock{
 		parent::__construct(GLOWING_REDSTONE_ORE, 0, "Glowing Redstone Ore");
 		$this->hardness = 15;
 	}
-
 	public static function onRandomTick(Level $level, $x, $y, $z){
 		$level->setBlock(new Position($x, $y, $z, $level), BlockAPI::get(REDSTONE_ORE, $level->level->getBlockDamage($x, $y, $z)), false, false, true);
 	}
-
 	public function onUpdate($type){
 		if($type === BLOCK_UPDATE_SCHEDULED){
 			$this->level->setBlock($this, BlockAPI::get(REDSTONE_ORE, $this->meta), false, false, true);			
@@ -36,7 +34,7 @@ class GlowingRedstoneOreBlock extends SolidBlock implements LightingBlock{
 	}
 	
 	public function getDrops(Item $item, Player $player){
-		return [];
+		return array();
 	}
 	
 }

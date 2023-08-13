@@ -60,9 +60,9 @@ abstract class Animal extends Creature implements Ageable, Breedable{
 	public function spawnChild()
 	{
 		return $this->server->api->entity->add($this->level, $this->class, $this->type, [
-			"x" => $this->x + Utils::randomFloat() * mt_rand(-1, 1),
+			"x" => $this->x + lcg_value() * mt_rand(-1, 1),
 			"y" => $this->y,
-			"z" => $this->z + Utils::randomFloat() * mt_rand(-1, 1),
+			"z" => $this->z + lcg_value() * mt_rand(-1, 1),
 			"IsBaby" => true,
 			"Age" => -24000,
 		]);
@@ -83,6 +83,18 @@ abstract class Animal extends Creature implements Ageable, Breedable{
 	
 	public function isInLove(){
 		return $this->inLove > 0;
+	}
+	
+	public function interactWith(Entity $e, $action){
+		if($e->isPlayer() && $action === InteractPacket::ACTION_HOLD){
+			$slot = $e->player->getHeldItem();
+			if($this->isFood($slot->getID())){
+				$e->player->removeItem($slot->getID(), $slot->getMetadata(), 1);
+				$this->inLove = 600; //600 ticks, original mehod from mcpe
+				return true;
+			}
+		}
+		parent::interactWith($e, $action);
 	}
 	
 	public function counterUpdate(){

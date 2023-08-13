@@ -15,19 +15,19 @@ class DirtBlock extends SolidBlock{
 				if($item->getMetadata() >= $item->getMaxDurability()) $player->setSlot($player->slot, new Item(AIR, 0, 0), false);
 				else $player->setSlot($player->slot, $item, true);
 			}
-			$this->level->setBlock($this, BlockAPI::get(FARMLAND, 0), true, false, true);
+			$this->level->fastSetBlockUpdate($this->x, $this->y, $this->z, FARMLAND, 0, true);
 			return true;
 		}
 		return false;
 	}
 	public static function onRandomTick(Level $level, $x, $y, $z){
-		if(mt_rand(0, 3) == 0){
+		/*if(mt_rand(0, 3) == 0){
 			$up = $level->getBlockWithoutVector($x, $y + 1, $z, false); //$this->getSide(1);
 			if(($up->isTransparent === false) or ($up->isLiquid) or ($up->getID() == 60)) return false;
 			if(self::getGrassInRadius($level, $x, $y, $z)){
 				$level->setBlock(new Position($x, $y, $z, $level), BlockAPI::get(GRASS), true, false, true);
 			}
-		}
+		}*/
 	}
 
 	public function getBlockID($x, $y, $z){
@@ -65,4 +65,5 @@ class DirtBlock extends SolidBlock{
 
 		return false;
 	}
+
 }

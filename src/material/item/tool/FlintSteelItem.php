@@ -9,9 +9,8 @@ class FlintSteelItem extends ItemTool{
 	
 	public function onActivate(Level $level, Player $player, Block $block, Block $target, $face, $fx, $fy, $fz){
 		if(($player->gamemode & 0x01) === 0 and $this->useOn($block) and $this->getMetadata() >= $this->getMaxDurability()){
-			$player->setSlot($player->slot, new Item(AIR, 0, 0), false); //TODO check 
+			$player->setSlot($player->slot, new Item(AIR, 0, 0), false); //TODO check
 		}
-
 		if($block->getID() === AIR and ($target instanceof SolidBlock)){
 			$level->setBlock($block, new FireBlock(), true, false, true);
 			$block->level->scheduleBlockUpdate($block, Utils::getRandomUpdateTicks(), BLOCK_UPDATE_RANDOM);

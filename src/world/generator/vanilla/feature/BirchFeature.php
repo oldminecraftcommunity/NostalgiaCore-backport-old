@@ -1,6 +1,7 @@
 <?php
 
-class BirchFeature extends Feature{
+class BirchFeature extends Feature
+{
 	public function place(Level $level, MersenneTwister $rand, $x, $y, $z){
 		$nextInt = $rand->nextInt(3) + 5;
 		$z2 = true;
@@ -12,16 +13,16 @@ class BirchFeature extends Feature{
 			if($i >= (($y + 1) + $nextInt) - 2){
 				$i2 = 2;
 			}
-
+			
 			for($i3 = $x - $i2; $i3 <= $x + $i2 && $z2; ++$i3){
 				for($i4 = $z - $i2; $i4 <= $z + $i2 && $z2; ++$i4){
 					if($i >= 0 && $i < 128){
 						$blockID = $level->level->getBlockID($i3, $i, $i4);
 						if($blockID != 0 && $blockID != LEAVES){
-							$z2 = false;
+							return;
 						}
 					}else{
-						$z2 = false;
+						return;
 					}
 				}
 			}
@@ -43,7 +44,7 @@ class BirchFeature extends Feature{
 						}
 					}
 				}
-
+				
 				for($i12 = 0; $i12 < $nextInt; ++$i12){
 					$blockID = $level->level->getBlockID($x, $y + $i12, $z);
 					if($blockID == 0 || $blockID == LEAVES){
@@ -55,6 +56,7 @@ class BirchFeature extends Feature{
 			return false;
 		}
 		return false;
-
+			
 	}
 }
+

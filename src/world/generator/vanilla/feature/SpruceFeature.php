@@ -1,6 +1,6 @@
 <?php
-
-class SpruceFeature extends Feature{
+class SpruceFeature extends Feature
+{
 	public function place(Level $level, MersenneTwister $rand, $x, $y, $z){
 		$nextInt = $rand->nextInt(4) + 6;
 		$nextInt2 = 1 + $rand->nextInt(2);
@@ -10,7 +10,7 @@ class SpruceFeature extends Feature{
 		if($y < 1 || $y + $nextInt + 1 > 128){
 			return false;
 		}
-
+		
 		for($i3 = $y; $i3 <= $y + 1 + $nextInt && $z2; ++$i3){
 			if($i3 - $y < $nextInt2){
 				$i = 0;
@@ -30,7 +30,7 @@ class SpruceFeature extends Feature{
 				}
 			}
 		}
-
+		
 		if($z2){
 			$blockID = $level->level->getBlockID($x, $y - 1, $z);
 			if(($blockID == GRASS || $blockID == DIRT) && $y < (128 - $nextInt) - 1){
@@ -49,7 +49,7 @@ class SpruceFeature extends Feature{
 							}
 						}
 					}
-
+					
 					if($nextInt4 >= $i6){
 						$nextInt4 = $i7;
 						$i7 = 1;
@@ -74,3 +74,4 @@ class SpruceFeature extends Feature{
 		return false;
 	}
 }
+

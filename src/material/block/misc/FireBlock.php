@@ -8,13 +8,13 @@ class FireBlock extends FlowableBlock implements LightingBlock{
 		$this->isFullBlock = true;
 		$this->hardness = 0;
 	}
-
+	
 	public static function onRandomTick(Level $level, $x, $y, $z){
 		if($level->level->getBlockID($x, $y - 1, $z) !== NETHERRACK){
 			$level->setBlock(new Position($x, $y, $z, $level), new AirBlock(), true, false, true);
 		}
 	}
-
+	
 	public function getDrops(Item $item, Player $player){
 		return array();
 	}

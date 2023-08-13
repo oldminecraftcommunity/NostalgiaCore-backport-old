@@ -31,7 +31,6 @@ class WheatBlock extends FlowableBlock{
 		}
 		return false;
 	}
-
 	public static function onRandomTick(Level $level, $x, $y, $z){
 		if(mt_rand(0, 2) == 1){
 			$block = $level->level->getBlock($x, $y, $z);
@@ -42,7 +41,6 @@ class WheatBlock extends FlowableBlock{
 			}
 		}
 	}
-
 	public function onUpdate($type){
 		if($type === BLOCK_UPDATE_NORMAL){
 			if($this->getSide(0)->getID() != 60){
@@ -58,14 +56,13 @@ class WheatBlock extends FlowableBlock{
 		$drops = [];
 		if($this->meta >= 0x07){
 			$drops[] = [WHEAT, 0, 1];
-		}else{
-			for($i = 0; $i < 3; ++$i){
-				if(mt_rand(0, 15) <= $this->meta){ //a way from 1.4.7
-				  $drops[] = [WHEAT_SEEDS, 0, 1];
-				}
-			}
-			
 		}
+		for($i = 0; $i < 3; ++$i){
+			if(mt_rand(0, 15) <= $this->meta){ //a way from 1.4.7
+			  $drops[] = [WHEAT_SEEDS, 0, 1];
+			}
+		}
+		
 		return $drops;
 	}
 }

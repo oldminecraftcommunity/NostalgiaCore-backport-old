@@ -4,12 +4,19 @@ class SaplingBlock extends FlowableBlock{
 	const OAK = 0;
 	const SPRUCE = 1;
 	const BIRCH = 2;
-
+	const JUNGLE = 3;
 	const BURN_TIME = 5;
 	
 	public function __construct($meta = SaplingBlock::OAK){
 		parent::__construct(SAPLING, $meta, "Sapling");
 		$this->isActivable = true;
+		$names = array(
+			0 => "Oak Sapling",
+			1 => "Spruce Sapling",
+			2 => "Birch Sapling",
+			3 => "Jungle Sapling",
+		);
+		$this->name = $names[$this->meta & 0x03];
 		$this->hardness = 0;
 	}
 	
@@ -40,22 +47,21 @@ class SaplingBlock extends FlowableBlock{
 				$this->level->setBlock($this, new AirBlock(), false, false, true);
 				return BLOCK_UPDATE_NORMAL;
 			}
-		}elseif($type === BLOCK_UPDATE_RANDOM){ //Growth
-			if(mt_rand(1,7) === 1){
-				if(($this->meta & 0x08) === 0x08){
-					TreeObject::growTree($this->level, $this, new Random(), $this->meta & 0x03);
-				}else{
-					$this->meta |= 0x08;
-					$this->level->setBlock($this, $this, true, false, true);
-					return BLOCK_UPDATE_RANDOM;
-				}
-			}else{
-				return BLOCK_UPDATE_RANDOM;
-			}
 		}
 		return false;
 	}
-	
+	public static function onRandomTick(Level $level, $x, $y, $z){
+		if(mt_rand(1,7) === 1){
+			$meta = $level->level->getBlockDamage($x, $y, $z);
+			if(($meta & 0x08) === 0x08){
+				TreeObject::growTree($level, new Vector3($x, $y, $z), new Random(), $meta & 0x03);
+			}else{
+				$meta |= 0x08;
+				$level->fastSetBlockUpdate($x, $y, $z, SAPLING, $meta);
+				//$level->setBlock($this, $this, true, false, true);
+			}
+		}
+	}
 	public function getDrops(Item $item, Player $player){
 		return array(
 			array($this->id, $this->meta & 0x03, 1),

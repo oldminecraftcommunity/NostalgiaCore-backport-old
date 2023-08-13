@@ -16,6 +16,6 @@ class RedstoneOreBlock extends SolidBlock{
 	}
 
 	public function getDrops(Item $item, Player $player){
-		return [];
+		return array();
 	}
 }

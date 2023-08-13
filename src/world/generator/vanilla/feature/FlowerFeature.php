@@ -1,11 +1,12 @@
 <?php
 
-class FlowerFeature extends Feature{
+class FlowerFeature extends Feature
+{
 	private $id;
 	public function __construct($id){
 		$this->id = $id;
 	}
-
+	
 	public function place(Level $level, MersenneTwister $rand, $x, $y, $z){ //TODO pass VanillaGenerator instance and update heightmap on ceratin block placement
 		for($i = 0; $i < 64; ++$i){
 			$xPos = ($x + $rand->nextInt(8)) - $rand->nextInt(8);
@@ -25,3 +26,4 @@ class FlowerFeature extends Feature{
 		}
 	}
 }
+

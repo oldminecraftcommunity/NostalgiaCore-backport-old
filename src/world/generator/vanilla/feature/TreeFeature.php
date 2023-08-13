@@ -1,6 +1,6 @@
 <?php
-
-class TreeFeature extends Feature{
+class TreeFeature extends Feature
+{
 	public function place(Level $level, MersenneTwister $rand, $x, $y, $z){
 		$nextInt = $rand->nextInt(3) + 4;
 		$z2 = true;
@@ -8,16 +8,16 @@ class TreeFeature extends Feature{
 		for($i = $y; $i <= $y + 1 + $nextInt; ++$i){
 			$i2 = ($i == $y) ? 0 : 1;
 			if($i >= (($y + 1) + $nextInt) - 2) $i2 = 2;
-
+			
 			for($i3 = $x - $i2; $i3 <= $x + $i2 && $z2; ++$i3){
 				for($i4 = $z - $i2; $i4 <= $z + $i2 && $z2; ++$i4){
 					if($i >= 0 && $i < 128){
 						$tileID = $level->level->getBlockID($i3, $i, $i4);
 						if($tileID != 0 && $tileID != LEAVES){
-							$z2 = false;
+							return;
 						}
 					}else{
-						$z2 = false;
+						return;
 					}
 				}
 			}
@@ -49,3 +49,4 @@ class TreeFeature extends Feature{
 		}
 	}
 }
+
