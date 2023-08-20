@@ -27,6 +27,7 @@ class ConsoleAPI{
   
 		$this->cmdWhitelist("help");
 		$this->cmdWhitelist("status");
+		$this->cmdWhitelist("?");
 	}
 	
 	/**
@@ -230,9 +231,6 @@ class ConsoleAPI{
 				$this->server->api->setProperty("difficulty", (int) $s);
 				return "Difficulty changed to " . $this->server->difficulty . "\n";
 			case "?":
-				if($issuer !== "console" and $issuer !== "rcon"){
-					break;
-				}
 			case "help":
 				if(isset($params[0]) and !is_numeric($params[0])){
 					$c = trim(strtolower($params[0]));
