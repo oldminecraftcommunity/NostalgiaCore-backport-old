@@ -436,7 +436,7 @@ class Entity extends Position
 								$this->harm(2, "water");
 								$hasUpdate = true;
 								$waterDone = true;
-							} elseif ($x == ($endX - 1) and $y == $endY and $z == ($endZ - 1 - (($meta % 8) / 9)) and ($this->class === ENTITY_MOB or $this->class === ENTITY_PLAYER) and !$waterDone) {
+							} elseif ($x == ($endX - 1) and $y == $endY and $z == ($endZ - 1) and ($this->class === ENTITY_MOB or $this->class === ENTITY_PLAYER) and !$waterDone) {
 								$this->air -= 1;
 								$waterDone = true;
 								$this->updateMetadata();
@@ -461,7 +461,7 @@ class Entity extends Position
 							}
 							break;
 						case CACTUS: // Cactus damage
-							if ($this->inBlockNonVector($x, $y, $z)) {
+							if ((new AxisAlignedBB($x, $y, $z, $x + 1, $y + 1, $z + 1))->intersectsWith($this->boundingBox)) {
 								$this->harm(1, "cactus");
 								$hasUpdate = true;
 							}
@@ -1388,6 +1388,7 @@ class Entity extends Position
 	}
 	
 	public function makeDead($cause){
+		if($this->server->api->dhandle("entity.death", ["entity" => $this, "cause" => $cause]) === false) return false;
 		$this->spawnDrops();
 		$this->air = 200;
 		$this->fire = 0;
@@ -1399,9 +1400,9 @@ class Entity extends Position
 		if($this->player instanceof Player){
 			$pk = new MoveEntityPacket_PosRot();
 			$pk->eid = $this->eid;
-			$pk->x = - 256;
+			$pk->x = -256;
 			$pk->y = 128;
-			$pk->z = - 256;
+			$pk->z = -256;
 			$pk->yaw = 0;
 			$pk->pitch = 0;
 			$this->server->api->player->broadcastPacket($this->level->players, $pk);
@@ -1444,10 +1445,10 @@ class Entity extends Position
 		$this->speedX /= 2;
 		$this->speedZ /= 2;
 		$this->speedX -= ($d / $f) * $f1;
-		$this->speedY += 0.40000000596046448;
+		$this->speedY += 0.4;
 		$this->speedZ -= ($d1 / $f) * $f1;
-		if($this->speedY > 0.40000000596046448){
-			$this->speedY = 0.40000000596046448;
+		if($this->speedY > 0.4){
+			$this->speedY = 0.4;
 		}
 		//$this->speedY /= 2;
 	}
