@@ -148,8 +148,10 @@ class PluginAPI extends stdClass{
 					console("[INFO] Loading PHAR plugin \"".FORMAT_GREEN.$pluginInfo["name"].FORMAT_RESET."\" ".FORMAT_AQUA.$pluginInfo["version"].FORMAT_RESET." by ".FORMAT_AQUA.$pluginInfo["author"].FORMAT_RESET);
 					
 					$aver = CURRENT_API_VERSION;
-					if(!in_array((string) CURRENT_API_VERSION, $pluginInfo["api"])){
-						console("[WARNING] API is not the same as Core, might cause bugs({$pluginInfo["api"]} != {$aver})");
+					if(!in_array((string) CURRENT_API_VERSION, $pluginInfo["api"])){ 
+						if(is_array($pluginInfo)) $s = implode(",",$pluginInfo["api"]);
+						else $s = $pluginInfo["api"];
+						console("[WARNING] API is not the same as Core, might cause bugs({$s} != {$aver})");
 					}
 					
 					$phr = "phar://$filePath/";
@@ -171,9 +173,6 @@ class PluginAPI extends stdClass{
 					$this->plugins[$identifier] = [$plugin, $pluginInfo];
 				}
 			}
-		}
-		if($pharCnt > 0){
-			console("[WARNING] PHAR Plugin format is experemental and might cause bugs.");
 		}
 	}
 

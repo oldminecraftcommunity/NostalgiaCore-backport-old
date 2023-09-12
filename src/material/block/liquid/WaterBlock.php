@@ -33,16 +33,16 @@ class WaterBlock extends LiquidBlock{
 			}
 			$b = $this->getSide($side);
 			if($b instanceof LavaBlock){
-				$level = $b->meta & 0x07;
+				$level = $b->meta & 0x06;
 				if($level == 0x00){
 					$this->level->setBlock($b, new ObsidianBlock(), false, false, true);
 				}else{
 					$this->level->setBlock($b, new CobblestoneBlock(), false, false, true);
 				}
-				return true;
+				$ret = true;
 			}
 		}
-		return false;
+		return $ret;
 	}
 	
 	public function getFrom(){

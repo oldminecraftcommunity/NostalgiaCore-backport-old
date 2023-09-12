@@ -77,8 +77,6 @@ class PocketMinecraftServer{
 		console("[INFO] Loading extra.properties...");
 		$this->extraprops = new Config(DATA_PATH . "extra.properties", CONFIG_PROPERTIES, [
 			"version" => "5",
-			"experemental-mob-features" => true,
-			"enable-mob-ai" => false,
 			"enable-nether-reactor" => true,
 			"enable-explosions" => true,
 			"save-player-data" => true,
@@ -90,18 +88,14 @@ class PocketMinecraftServer{
 			"discord-bot-name" => "NostalgiaCore Logger",
 			"despawn-mobs" => true, 
 			"mob-despawn-ticks" => 18000,
-			"16x16x16_chunk_sending" => false
-			
+			"16x16x16_chunk_sending" => false,
+			"experimental-mob-ai" => false,			
 		]);
 		Player::$smallChunks = $this->extraprops->get("16x16x16_chunk_sending");
 		Living::$despawnMobs = $this->extraprops->get("despawn-mobs");
 		Living::$despawnTimer = $this->extraprops->get("mob-despawn-ticks");
-		Entity::$allowedAI = $this->extraprops->get("enable-mob-ai");
-		Entity::$updateOnTick = $this->extraprops->get("experemental-mob-features");
 		PocketMinecraftServer::$SAVE_PLAYER_DATA = $this->extraprops->get("save-player-data");
-		if(Entity::$updateOnTick){
-			console("[WARNING] Experemental mob features are enabled. Unpredictable behavior.");
-		}
+		MobController::$ADVANCED = $this->extraprops->get("experimental-mob-ai");
 		Explosion::$enableExplosions = $this->extraprops->get("enable-explosions");
 		NetherReactorBlock::$enableReactor = $this->extraprops->get("enable-nether-reactor");
 		if($this->extraprops->get("discord-msg") == true){
@@ -221,7 +215,6 @@ class PocketMinecraftServer{
 					$t->stop = true;
 					$t->notify();
 				}, $this->asyncThread);
-				//@$this->asyncThread->stop = true;
 			}
 		}
 	}
@@ -234,7 +227,7 @@ class PocketMinecraftServer{
 				"url" => $url,
 				"data" => [
 					"username" => $name,
-					"content" => $this->extraprops->get("discord-ru-smiles") ? str_replace("@", " ", str_replace("Ы", "<:smile_cool:1007021190294032534>", str_replace("Ь", "<:smile_cry:1007021188490477718>", str_replace("Ъ", "<:smile_happy:1007021186745630851>", str_replace("Ё", "<:smile_neutral:1007021184874979409>", $msg))))) : str_replace("@", "", $msg)
+					"content" => $this->extraprops->get("discord-ru-smiles") ? str_replace("@", " ", str_replace("Ы", "<:imp_cool:1151085500396998719>", str_replace("Ь", "<:imp_badphp5:1151085478410457120>", str_replace("Ъ", "<:imp_gudjava:1151085431962742784>", str_replace("Ё", "<:imp_wut:1151085524241621012>", $msg))))) : str_replace("@", "", $msg)
 				],
 			], null);
 		}
