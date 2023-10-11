@@ -50,10 +50,11 @@ class Player{
 	private $port;
 	private $counter = [0, 0, 0, 0];
 	private $username;
-	private $iusername;
+	public $iusername;
 	private $eid = false;
 	private $startAction = false;
-	private $isSleeping = false;
+	public $isSleeping = false;
+	public $sleepingTime = 0;
 	private $chunksOrder = [];
 	private $lastMeasure = 0;
 	private $bandwidthRaw = 0;
@@ -125,12 +126,12 @@ class Player{
 			}
 		}
 		$this->isSleeping = $pos;
+		$this->sleepingTime = 0;
 		$this->teleport(new Position($pos->x + 0.5, $pos->y + 1, $pos->z + 0.5, $this->level), false, false, false, false);
 		if($this->entity instanceof Entity){
 			$this->entity->updateMetadata();
 		}
 		$this->setSpawn($pos);
-		$this->server->schedule(60, [$this, "checkSleep"]);
 		return true;
 	}
 
@@ -293,6 +294,7 @@ class Player{
 		$sendtime = microtime(true);
 
 		$size = $this->MTU - 34;
+		if($size <= 0) return false;
 		if($size <= 0) return false;
 		$buffer = str_split($packet->buffer, $size);
 		$bigCnt = $this->bigCnt;
@@ -603,22 +605,6 @@ class Player{
 		$pk->slots = $this->inventory;
 		$pk->hotbar = $hotbar;
 		$this->dataPacket($pk);
-	}
-
-	public function checkSleep(){
-		if($this->isSleeping !== false){
-			if($this->server->api->time->getPhase($this->level) === "night"){
-				foreach($this->server->api->player->getAll($this->level) as $p){
-					if($p->isSleeping === false){
-						return false;
-					}
-				}
-				$this->server->api->time->set("day", $this->level);
-				foreach($this->server->api->player->getAll($this->level) as $p){
-					$p->stopSleep();
-				}
-			}
-		}
 	}
 
 	/**
@@ -1260,6 +1246,9 @@ class Player{
 		$this->send($pk);
 		return [$pk->seqNumber];
 	}
+	public function entityTick(){
+		if($this->isSleeping) ++$this->sleepingTime;
+	}
 
 	public function handleDataPacket(RakNetDataPacket $packet){
 		if($this->connected === false){
@@ -1507,6 +1496,7 @@ class Player{
 				if($this->spawned === false){
 					break;
 				}
+				if($this->isSleeping) break;
 				
 				if(($this->entity instanceof Entity) and $packet->messageIndex > $this->lastMovement){
 					$this->lastMovement = $packet->messageIndex;
@@ -2220,6 +2210,7 @@ class Player{
 	
 	public function stopSleep(){
 		$this->isSleeping = false;
+		$this->sleepingTime = 0;
 		if($this->entity instanceof Entity){
 			$this->entity->updateMetadata();
 		}
