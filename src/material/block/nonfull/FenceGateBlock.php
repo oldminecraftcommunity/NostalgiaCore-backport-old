@@ -1,6 +1,9 @@
 <?php
 
 class FenceGateBlock extends TransparentBlock{
+
+	//TODO public static function getCollisionBoundingBoxes(Level $level, $x, $y, $z, Entity $entity)
+
 	public function __construct($meta = 0){
 		parent::__construct(FENCE_GATE, $meta, "Fence Gate");
 		$this->isActivable = true;
@@ -28,7 +31,7 @@ class FenceGateBlock extends TransparentBlock{
 		);
 	}
 	public function onActivate(Item $item, Player $player){
-				$this->meta ^= 0x04;
+		$this->meta ^= 0x04;
 		$this->level->setBlock($this, $this, true, false, true);
 		$players = ServerAPI::request()->api->player->getAll($this->level);
 		unset($players[$player->CID]);

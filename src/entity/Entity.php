@@ -26,6 +26,7 @@ class Entity extends Position
 	public $eid;
 	public $type;
 	public $name;
+	public $delayBeforePickup;
 	public $x, $y, $z;
 	public $speedX, $speedY, $speedZ, $speed;
 	public $lastX = 0, $lastY  = 0, $lastZ  = 0, $lastYaw  = 0, $lastPitch  = 0, $lastTime = 0, $lastSpeedX = 0, $lastSpeedY = 0, $lastSpeedZ = 0;
@@ -335,22 +336,25 @@ class Entity extends Position
 		$hasUpdate = $this->class === ENTITY_MOB; // force true for mobs
 		$time = microtime(true);
 		if($this->class === ENTITY_PLAYER and ($this->player instanceof Player) and $this->player->spawned === true and $this->player->blocked !== true && ! $this->dead){
-			foreach($this->server->api->entity->getRadius($this, 2, ENTITY_ITEM) as $item){ //TODO vanilla method of searching/radius
-				if(!$item->closed && $item->spawntime > 0 && ($time - $item->spawntime) >= 0.6){
-					if((($this->player->gamemode & 0x01) === 1 || $this->player->hasSpace($item->type, $item->meta, $item->stack) === true) && $this->server->api->dhandle("player.pickup", array(
-						"eid" => $this->player->eid,
-						"player" => $this->player,
-						"entity" => $item,
-						"block" => $item->type,
-						"meta" => $item->meta,
-						"target" => $item->eid
-					)) !== false){
-						$item->close();
-						// $item->spawntime = 0;
-						// $this->server->schedule(15, array($item, "close"));
+			$myBB = $this->boundingBox->grow(1, 0.5, 1);
+			foreach($this->server->api->entity->getRadius($this, 2, ENTITY_ITEM) as $item){
+				if(!$item->closed && $item->spawntime > 0 && $item->delayBeforePickup == 0){
+					if($item->boundingBox->intersectsWith($myBB)){ 
+						if((($this->player->gamemode & 0x01) === 1 || $this->player->hasSpace($item->type, $item->meta, $item->stack) === true) && $this->server->api->dhandle("player.pickup", array(
+							"eid" => $this->player->eid,
+							"player" => $this->player,
+							"entity" => $item,
+							"block" => $item->type,
+							"meta" => $item->meta,
+							"target" => $item->eid
+						)) !== false){
+							$item->close();
+						}
 					}
+
 				}
 			}
+			unset($myBB);
 		} elseif($this->class === ENTITY_ITEM){
 			if(($time - $this->spawntime) >= 300){
 				$this->close(); // Despawn timer
@@ -402,20 +406,21 @@ class Entity extends Position
 		$endZ = ceil($this->boundingBox->maxZ);
 		$waterDone = false;
 		//$bup = new AxisAlignedBB($startX, $startY + 1, $startZ, $endX, $endY, $endZ);
-		
-		for($i = 0; $i < 8; ++$i){
-			$x = ((($i >> 0) % 2) - 0.5) * $this->width * 0.8;
-			$y= ((($i >> 1) % 2) - 0.5) * 0.1;
-			$z = ((($i >> 2) % 2) - 0.5) * $this->width * 0.8;
-			
-			$blockX = (int) ($this->x + $x);
-			$blockY = (int) ($this->y + $this->getEyeHeight() + $y);
-			$blockZ = (int) ($this->z + $z);
-			
-			if(!StaticBlock::getIsTransparent($this->level->level->getBlockID($blockX, $blockY, $blockZ))){
-				$this->harm(1, "suffocation"); // Suffocation
-				$hasUpdate = true;
-				break;
+		if(!($this instanceof Painting) && !($this->isPlayer() && $this->player->isSleeping !== false)){ //TODO better way to fix
+			for($i = 0; $i < 8; ++$i){
+				$x = ((($i >> 0) % 2) - 0.5) * $this->width * 0.8;
+				$y= ((($i >> 1) % 2) - 0.5) * 0.1;
+				$z = ((($i >> 2) % 2) - 0.5) * $this->width * 0.8;
+
+				$blockX = (int) ($this->x + $x);
+				$blockY = (int) ($this->y + $this->getEyeHeight() + $y);
+				$blockZ = (int) ($this->z + $z);
+
+				if(!StaticBlock::getIsTransparent($this->level->level->getBlockID($blockX, $blockY, $blockZ))){
+					$this->harm(1, "suffocation"); // Suffocation
+					$hasUpdate = true;
+					break;
+				}
 			}
 		}
 		
@@ -546,11 +551,13 @@ class Entity extends Position
 									$water = $y == ($y1 - 1);
 									$this->fallDistance = 0;
 								}
-								if(StaticBlock::getIsSolid($b)){
-									$blockBounds = StaticBlock::getBoundingBoxForBlockCoords($b, $x, $y, $z);
-									$this->speedY = $blockBounds->calculateYOffset($this->boundingBox, $this->speedY);
-									$this->speedX = $blockBounds->calculateXOffset($this->boundingBox, $this->speedX);
-									$this->speedZ = $blockBounds->calculateZOffset($this->boundingBox, $this->speedZ);
+								if($b != 0){
+									$blockBounds = Block::$class[$b]::getCollisionBoundingBoxes($this->level, $x, $y, $z, $this); //StaticBlock::getBoundingBoxForBlockCoords($b, $x, $y, $z);
+									foreach($blockBounds as $blockBound){
+										$this->speedY = $blockBound->calculateYOffset($this->boundingBox, $this->speedY);
+										$this->speedX = $blockBound->calculateXOffset($this->boundingBox, $this->speedX);
+										$this->speedZ = $blockBound->calculateZOffset($this->boundingBox, $this->speedZ);
+									}
 								}
 							}
 						}
@@ -631,6 +638,9 @@ class Entity extends Position
 					$hasUpdate = true;
 					if(($this->server->ticks % 4 === 0 && $this->class === ENTITY_ITEM) || $this->class != ENTITY_ITEM){ //update item speed every 4 ticks
 						$this->server->api->handle("entity.motion", $this);
+						$this->lastSpeedZ = $this->speedZ;
+						$this->lastSpeedY = $this->speedY;
+						$this->lastSpeedX = $this->speedX;
 					}
 				}
 				$this->updateFallState($this->speedY);
@@ -679,6 +689,9 @@ class Entity extends Position
 		
 		if($this->knockbackTime > 0){
 			--$this->knockbackTime;
+		}
+		if($this->delayBeforePickup > 0){
+			--$this->delayBeforePickup;
 		}
 		if($this->moveTime > 0){
 			--$this->moveTime;
@@ -1307,7 +1320,7 @@ class Entity extends Position
 	public function moveEntityWithOffset($oX, $oY, $oZ)
 	{
 		$oX = $oX === 0 ? $this->speedX : ($this->getSpeedModifer() * $oX * $this->getSpeed());
-		$oY = $oY <= 0 ? $this->speedY : (0.42);
+		$oY = $oY <= 0 ? $this->speedY : (0.40);
 		$oZ = $oZ === 0 ? $this->speedZ : ($this->getSpeedModifer() * $oZ * $this->getSpeed());
 		$this->setVelocity($oX, $oY, $oZ);
 	}
@@ -1426,7 +1439,12 @@ class Entity extends Position
 				$this->server->api->ban->ban($this->player->username);
 			}
 		} else{
-			$this->server->api->schedule(40, [$this, "close"], []);
+			if($this instanceof Painting){ //TODO better fix
+				$this->close();
+			}
+			else{
+				$this->server->api->schedule(40, [$this, "close"], []);
+			}
 		}
 	}
 	
