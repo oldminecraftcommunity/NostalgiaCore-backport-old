@@ -68,7 +68,10 @@ class Player{
 	private $packetStats;
 	private $chunkCount = [];
 	private $received = [];
-
+	
+	
+	public $entityMovementQueue;
+	public $entityMovementQueueLength = 0;
 	/**
 	 * @param integer $clientID
 	 * @param string $ip
@@ -77,7 +80,7 @@ class Player{
 	 */
 	public function __construct($clientID, $ip, $port, $MTU){
 		$this->bigCnt = 0;
-		$this->MTU = $MTU;
+		$this->MTU = min($MTU, 1100);
 		$this->server = ServerAPI::request();
 		$this->lastBreak = microtime(true);
 		$this->clientID = $clientID;
@@ -94,8 +97,10 @@ class Player{
 		$this->hotbar = [0, -1, -1, -1, -1, -1, -1, -1, -1];
 		$this->packetStats = [0, 0];
 		$this->buffer = new RakNetPacket(RakNetInfo::DATA_PACKET_0);
+		$this->entityMovementQueue = new RakNetPacket(RakNetInfo::DATA_PACKET_0);
+		$this->entityMovementQueue->data = [];
 		$this->buffer->data = [];
-		$this->server->schedule(2, [$this, "handlePacketQueues"], [], true);
+		$this->server->schedule(1, [$this, "handlePacketQueues"], [], true);
 		$this->server->schedule(20 * 60, [$this, "clearQueue"], [], true);
 		$this->evid[] = $this->server->event("server.close", [$this, "close"]);
 		console("[DEBUG] New Session started with " . $ip . ":" . $port . ". MTU " . $this->MTU . ", Client ID " . $this->clientID, true, true, 2);
@@ -128,6 +133,7 @@ class Player{
 		$this->isSleeping = $pos;
 		$this->sleepingTime = 0;
 		$this->teleport(new Position($pos->x + 0.5, $pos->y + 1, $pos->z + 0.5, $this->level), false, false, false, false);
+		//TODO change player hitbox size after he starts sleeping
 		if($this->entity instanceof Entity){
 			$this->entity->updateMetadata();
 		}
@@ -295,7 +301,6 @@ class Player{
 
 		$size = $this->MTU - 34;
 		if($size <= 0) return false;
-		if($size <= 0) return false;
 		$buffer = str_split($packet->buffer, $size);
 		$bigCnt = $this->bigCnt;
 		$this->bigCnt = ($this->bigCnt + 1) % 0x10000;
@@ -340,7 +345,7 @@ class Player{
 		$this->bufferLen = 0;
 		$this->buffer = new RakNetPacket(RakNetInfo::DATA_PACKET_0);
 		$this->buffer->data = [];
-		$this->nextBuffer = microtime(true) + 0.1;
+		$this->nextBuffer = microtime(true) + 0.05;
 	}
 
 	/**
@@ -606,7 +611,6 @@ class Player{
 		$pk->hotbar = $hotbar;
 		$this->dataPacket($pk);
 	}
-
 	/**
 	 * @param $type
 	 * @param $damage
@@ -770,7 +774,7 @@ class Player{
 				if($data->eid === $this->eid or $data->level !== $this->level){
 					break;
 				}
-				if(($data->speedX === 0 && $data->speedY === 0 && $data->speedZ === 0) || ($data->speedX === $data->lastSpeedX && $data->speedY === $data->lastSpeedY && $data->lastSpeedZ === $data->speedZ)){ //causer of packet flood is eliminated.
+				if(($data->speedX === 0 && $data->speedY === 0 && $data->speedZ === 0) || ($data->speedX === $data->lastSpeedX && $data->speedY === $data->lastSpeedY && $data->lastSpeedZ === $data->speedZ)){
 					break;
 				}
 				$pk = new SetEntityMotionPacket;
@@ -1108,7 +1112,7 @@ class Player{
 			}
 		}
 
-		if($this->nextBuffer <= $time and $this->bufferLen > 0){
+		if($this->bufferLen > 0){
 			$this->sendBuffer();
 		}
 
@@ -1136,7 +1140,65 @@ class Player{
 			}
 		}
 	}
-
+	public function sendEntityMovementUpdateQueue(){
+		if($this->entityMovementQueueLength > 0 and $this->entityMovementQueue instanceof RakNetPacket){
+			$this->entityMovementQueue->seqNumber = $this->counter[0]++;
+			$this->send($this->entityMovementQueue);
+		}
+		$this->entityMovementQueueLength = 0;
+		$this->entityMovementQueue = new RakNetPacket(RakNetInfo::DATA_PACKET_0);
+		$this->entityMovementQueue->data = [];
+	}
+	public function addEntityMovementUpdateToQueue(Entity $e){
+		$len = 0;
+		$packets = 0;
+		$motionSent = false;
+		$moveSent = false;
+		$headSent = false;
+		if($e->speedX != 0 || $e->speedY != 0 || $e->speedZ != 0 || $e->speedY != $e->lastSpeedY || $e->speedX != $e->lastSpeedX || $e->speedZ != $e->lastSpeedZ){
+			$motion = new SetEntityMotionPacket();
+			$motion->eid = $e->eid;
+			$motion->speedX = $e->speedX;
+			$motion->speedY = $e->speedY;
+			$motion->speedZ = $e->speedZ;
+			$motion->encode();
+			$len += 1 + strlen($motion->buffer);
+			++$packets;
+			$motionSent = true;
+		}
+		if($e->x != $e->lastX || $e->y != $e->lastY || $e->z != $e->lastZ || $e->yaw != $e->lastYaw || $e->pitch != $e->lastPitch){
+			$move = new MoveEntityPacket_PosRot();
+			$move->eid = $e->eid;
+			$move->x = $e->x;
+			$move->y = $e instanceof ItemEntity ? $e->boundingBox->maxY : $e->y; //TODO fix items getting into farmland in client side somehow else
+			$move->z = $e->z;
+			$move->yaw = $e->yaw;
+			$move->pitch = $e->pitch;
+			$move->encode();
+			$len += strlen($move->buffer) + 1;
+			++$packets;
+			$moveSent = true;
+		}
+		if($packets <= 0) return;
+		//console("Update {$e}: $packets, mot: $motionSent, mov: $moveSent, hed: $headSent");
+		$MTU = $this->MTU - 24;
+		if(($this->entityMovementQueueLength + $len) >= $MTU){
+			$this->sendEntityMovementUpdateQueue();
+		}
+		if($motionSent){
+			$motion->messageIndex = $this->counter[3]++;
+			$motion->reliability = 2;
+			$this->entityMovementQueue->data[] = $motion;
+		}
+		if($moveSent){
+			$move->messageIndex = $this->counter[3]++;
+			$move->reliability = 2;
+			$this->entityMovementQueue->data[] = $move;
+		}
+		
+		$this->entityMovementQueueLength += 6*$packets + $len;
+	}
+	
 	/**
 	 * @param string $reason Reason for closing connection
 	 * @param boolean $msg Set to false to silently disconnect player. No broadcast.
@@ -1246,7 +1308,6 @@ class Player{
 	public function entityTick(){
 		if($this->isSleeping) ++$this->sleepingTime;
 	}
-
 	public function handleDataPacket(RakNetDataPacket $packet){
 		if($this->connected === false){
 			return;
@@ -1469,7 +1530,7 @@ class Player{
 						$this->server->api->entity->spawnToAll($this->entity);
 
 						//$this->server->schedule(5, [$this->entity, "update"], [], true);
-						$this->server->schedule(2, [$this->entity, "updateMovement"], [], true);
+						//$this->server->schedule(2, [$this->entity, "updateMovement"], [], true);
 						$this->sendArmor();
 						$array = explode("@n", (string)$this->server->motd);
 						foreach($array as $msg){
@@ -1489,12 +1550,10 @@ class Player{
 				}
 				break;
 			case ProtocolInfo::MOVE_PLAYER_PACKET:
-				
 				if($this->spawned === false){
 					break;
 				}
 				if($this->isSleeping) break;
-				
 				if(($this->entity instanceof Entity) and $packet->messageIndex > $this->lastMovement){
 					$this->lastMovement = $packet->messageIndex;
 					$newPos = new Vector3($packet->x, $packet->y, $packet->z);

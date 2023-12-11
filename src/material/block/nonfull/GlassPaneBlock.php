@@ -6,7 +6,7 @@ class GlassPaneBlock extends TransparentBlock{
 		$this->isFullBlock = false;
 		$this->isSolid = false;
 	}
-
+	
 	public static function getCollisionBoundingBoxes(Level $level, $x, $y, $z, Entity $entity){
 		$var8 = self::canConnectTo($level->level->getBlockID($x, $y, $z - 1));
 		$var9 = self::canConnectTo($level->level->getBlockID($x, $y, $z + 1));
@@ -20,7 +20,7 @@ class GlassPaneBlock extends TransparentBlock{
 		}else{
 			$arr[] = $aabb->addMinMax(0, 0, 0.4375, 1, 1, 0.5625);
 		}
-
+		
 		if((!$var8 || !$var9) && ($var10 || $var11 || $var8 || $var9)){
 			if($var8 && !$var9) $arr[] = $aabb->addMinMax(0.4375, 0, 0, 0.5625, 1, 0.5);
 			elseif(!$var8 && $var9) $arr[] = $aabb->addMinMax(0.4375, 0, 0.5, 0.5625, 1, 1);
@@ -29,11 +29,11 @@ class GlassPaneBlock extends TransparentBlock{
 		}
 		return $arr;
 	}
-
+	  
 	public static function canConnectTo($blockID) : bool{
-		return StaticBlock::getIsSolid($blockID) || $blockID == GLASS;
+		return StaticBlock::getIsSolid($blockID) || $blockID == GLASS_PANE || $blockID == GLASS;
 	}
-
+	
 	public function getDrops(Item $item, Player $player){
 		return array(
 			array(GLASS_PANE, 0, 0),

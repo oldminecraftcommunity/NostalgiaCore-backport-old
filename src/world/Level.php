@@ -11,11 +11,13 @@ class Level{
 	 */
 	public $entityList;
 	
+	public $entitiesInLove = [];
+	
 	public $tiles, $blockUpdates, $nextSave, $players = [], $level, $mobSpawner, $totalMobsAmount = 0;
 	private $time, $startCheck, $startTime, $server, $name, $usedChunks, $changedBlocks, $changedCount, $stopTime;
-
+	
 	public $randInt1, $randInt2;
-
+	
 	public static $randomUpdateBlocks = [
 		FIRE => true,
 		FARMLAND => true,
@@ -58,6 +60,15 @@ class Level{
 		$this->__destruct();
 	}
 	
+	public function isTopSolidBlocking($x, $y, $z){
+		$idmeta = $this->level->getBlock($x, $y, $z);
+		$id = $idmeta[0];
+		$meta = $idmeta[1];
+		if($id == 0) return false;
+		if(StaticBlock::getIsTransparent($id)) return false;
+		
+		return true;
+	}
 	
 	/**
 	 * @param AxisAlignedBB $aABB
@@ -191,7 +202,7 @@ class Level{
 	public function isObstructed($e){
 		
 	}
-
+	
 	public function checkSleep(){ //TODO events?
 		if(count($this->players) == 0) return false;
 		if($this->server->api->time->getPhase($this->level)  === "night"){ //TODO vanilla
@@ -336,7 +347,7 @@ class Level{
 				$index = $this->level->getIndex($cX, $cZ);
 				if(!isset($this->level->chunks[$index]) || $this->level->chunks[$index] === false) continue;
 				for($c = 0; $c <= 20; ++$c){
-					$xyz = mt_rand(0, 0xffffffff) >> 2;//TODO fix php5
+					$xyz = mt_rand(0, 0xffffffff) >> 2;
 					$x = $xyz & 0xf;
 					$z = ($xyz >> 8) & 0xf; //TODO might be possible to make some micro optmizations
 					$y = ($xyz >> 16) & 0x7f;
@@ -349,6 +360,7 @@ class Level{
 			}
 		}
 		$this->totalMobsAmount = 0;
+		$post = [];
 		foreach($this->entityList as $k => $e){
 			if(!($e instanceof Entity)){
 				unset($this->entityList[$k]);
@@ -360,11 +372,23 @@ class Level{
 			}
 			if($e->isPlayer() || $e->needsUpdate){
 				$e->update();
+				if(!$e->isPlayer()) $post[] = $k;
 			}
 		}
-
+		foreach($this->players as $player){
+			foreach($post as $eid){
+				$e = $this->entityList[$eid] ?? false;
+				if(!($e instanceof Entity)){
+					continue;
+				}
+				$player->addEntityMovementUpdateToQueue($e);
+			}
+			$player->sendEntityMovementUpdateQueue();
+		}
+		
+		
 		$this->checkSleep();
-
+		
 		if($server->ticks % 40 === 0){ //40 ticks delay
 			$this->mobSpawner->handle();
 		}

@@ -23,13 +23,13 @@ class TaskTempt extends TaskBase
 			return;
 		}
 		
-		$ai->mobController->moveTo($this->target->x - 0.5, floor($ai->entity->y), $this->target->z - 0.5);
+		$ai->mobController->moveTo($this->target->x - 0.5, floor($ai->entity->y), $this->target->z - 0.5, false);
 		$ai->mobController->lookOn($this->target);
 	}
 
 	public function canBeExecuted(EntityAI $ai)
 	{
-		if(!($ai->entity instanceof Breedable) || $ai->entity->inPanic){ //TODO Work with path
+		if(!($ai->entity instanceof Breedable) || $ai->entity->inPanic || $ai->isStarted("TaskMate")){ //TODO Work with path
 			return false;
 		}
 		$target = $this->findTarget($ai->entity, 10);

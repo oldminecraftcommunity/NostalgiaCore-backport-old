@@ -4,7 +4,6 @@ class FuelData{
 
 	public static $duration = [
 		COAL => 80,
-		COAL_BLOCK => 800,
 		TRUNK => 15,
 		WOODEN_PLANKS => 15,
 		SAPLING => 5,
@@ -17,9 +16,6 @@ class FuelData{
 		FENCE => 15,
 		FENCE_GATE => 15,
 		WOODEN_STAIRS => 15,
-		SPRUCE_WOOD_STAIRS => 15,
-		BIRCH_WOOD_STAIRS => 15,
-		JUNGLE_WOOD_STAIRS => 15,
 		TRAPDOOR => 15,
 		WORKBENCH => 15,
 		BOOKSHELF => 15,

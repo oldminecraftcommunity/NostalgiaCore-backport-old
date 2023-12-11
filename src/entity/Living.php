@@ -28,12 +28,16 @@ abstract class Living extends Entity implements Damageable, Pathfindable{
 		return $this->path != null;
 	}
 	public function eatGrass(){}
-	public function __destruct()
-	{
-		parent::__destruct();
+	
+	public function close(){
+		parent::close();
 		unset($this->pathFollower->entity);
 		unset($this->ai->entity);
+		unset($this->ai->mobController->entity);
+		unset($this->ai);
+		unset($this->parent);
 	}
+	
 	public function canBeShot(){
 		return true;
 	}
@@ -65,7 +69,9 @@ abstract class Living extends Entity implements Damageable, Pathfindable{
 	public function update(){
 		if(self::$despawnMobs && ++$this->ticksExisted > self::$despawnTimer){
 			$this->close();
+			return;
 		}
+		if($this->closed) return;
 		if(!$this->dead && Entity::$allowedAI && $this->idleTime <= 0) {
 			$this->ai->updateTasks();
 		}

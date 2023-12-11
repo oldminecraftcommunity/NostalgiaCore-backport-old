@@ -22,7 +22,6 @@ class MobController
 	public function __construct($e){
 		$this->entity = $e;
 	}
-	
 	public function isDangerous($id){
 		return isset(self::$DANGEROUS_BLOCKS[$id]);
 	}
@@ -34,7 +33,7 @@ class MobController
 		$this->jumping = $b;
 	}
 	
-	public function moveNonInstant($x, $y, $z){
+	public function moveNonInstant($x, $y, $z, $camera = true){
 		if($x == 0 && $y == 0 && $z == 0){
 			return false;
 		}
@@ -58,7 +57,7 @@ class MobController
 				StaticBlock::getIsSolid(($d = $this->entity->level->level->getBlockID($xf - ($ox < 0), (int)($this->entity->y), ceil($zf)))) &&
 				!StaticBlock::getIsSolid($this->entity->level->level->getBlockID($xf - ($ox < 0), (int)($this->entity->y) + 1, ceil($zf)))
 		);
-
+		
 		while(self::$ADVANCED){
 			if($this->isDangerous($a) || $this->isDangerous($b) || $this->isDangerous($c) || $this->isDangerous($d)){
 				return false;
@@ -74,22 +73,21 @@ class MobController
 				$s4 = StaticBlock::getIsSolid($id4);
 				if($this->isDangerous($id2)) return false;
 				if($s2) break; //i cant goto label which wasnt declared before
-
+				
 				if($this->isDangerous($id3)) return false;
 				if($s3) break;
-
+				
 				if($this->isDangerous($id4)) return false;
 				if($s4) break;
-
+				
 				if(!($this->entity instanceof Chicken)){
 					return false;
 				}
 			}
 			break;
-			
 		}
-		$this->faceEntity($ox, $oy, $oz);
-		if($this->entity->knockbackTime <= 0){
+		if($camera) $this->faceEntity($ox, $oy, $oz);
+		if($this->entity->knockbackTime <= 0 && $this->isRotationCompleted()){
 		    $this->entity->moveEntityWithOffset($ox, $oy, $oz);
 		}
 		return true;
@@ -100,7 +98,6 @@ class MobController
 			$this->jumpTimeout = 10;
 			$this->entity->speedY = 0.40;
 		}
-		
 		if($this->jumpTimeout > 0) --$this->jumpTimeout;
 	}
 	
@@ -110,8 +107,8 @@ class MobController
 		$this->entity->yaw = Utils::wrapAngleTo360($this->entity->yaw + $w180min);
 	}
 	
-	public function moveTo($x, $y, $z){
-		return $this->moveNonInstant($x - floor($this->entity->x), $y - floor($this->entity->y), $z - floor($this->entity->z));
+	public function moveTo($x, $y, $z, $camera = true){
+		return $this->moveNonInstant($x - floor($this->entity->x), $y - floor($this->entity->y), $z - floor($this->entity->z), $camera);
 	}
 	
 	public function faceEntity($x, $y, $z){
@@ -129,7 +126,7 @@ class MobController
 		$tan = $dz == 0 ? ($dx < 0 ? 180 : 0) : (90 - rad2deg(atan($dx / $dz))); 
 		$thetaOffset = $dz < 0 ? 90 : 270;
 		$calcYaw = ($thetaOffset + $tan);
-		$this->finalYaw = $this->entity->yaw = $calcYaw;
+		$this->finalYaw = $this->entity->yaw = Utils::wrapAngleTo360($calcYaw);
 	}
 	
 	public function lookOffset($x, $y, $z, $pitch = true){
@@ -137,7 +134,7 @@ class MobController
 		$thetaOffset = $z < 0 ? 90 : 270;
 		$calcYaw = $tan + $thetaOffset;
 		
-		$this->entity->yaw = $this->finalYaw = $calcYaw;
+		$this->entity->yaw = $this->finalYaw = Utils::wrapAngleTo360($calcYaw);
 		
 		if($pitch){
 			$diff = sqrt($x * $x + $z * $z);
