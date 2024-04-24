@@ -43,7 +43,7 @@ abstract class Block extends Position{
 			OBSIDIAN => "ObsidianBlock",
 			TORCH => "TorchBlock",
 			FIRE => "FireBlock",
-
+        
 			WOOD_STAIRS => "WoodStairsBlock",
 			CHEST => "ChestBlock",
 
@@ -109,6 +109,7 @@ abstract class Block extends Position{
 			INFO_UPDATE => "InfoUpdateBlock",
 			INFO_UPDATE2 => "InfoUpdate2Block",
 			RESERVED6 => "Reserved6Block",
+			COBWEB => "CobwebBlock",
 	);
 	protected $id;
 	protected $meta;

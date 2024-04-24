@@ -33,7 +33,7 @@ define("LAPIS_BLOCK", 22);
 define("SANDSTONE", 24);
 
 define("BED_BLOCK", 26);
-
+define("COBWEB", 30);
 define("TALL_GRASS", 31);
 define("WOOL", 35);
 define("DANDELION", 37);

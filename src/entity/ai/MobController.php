@@ -15,6 +15,7 @@ class MobController
 	public $entity;
 	
 	public $finalYaw, $finalPitch;
+	public $finalHeadYaw;
 	
 	protected $jumping;
 	protected $jumpTimeout;
@@ -92,7 +93,9 @@ class MobController
 		}
 		return true;
 	}
-	
+	public function isRotationCompleted(){
+		return $this->finalYaw === $this->entity->yaw;
+	}
 	public function movementTick(){
 		if($this->isJumping() && $this->jumpTimeout <= 0 && $this->entity->onGround){
 			$this->jumpTimeout = 10;
@@ -126,7 +129,7 @@ class MobController
 		$tan = $dz == 0 ? ($dx < 0 ? 180 : 0) : (90 - rad2deg(atan($dx / $dz))); 
 		$thetaOffset = $dz < 0 ? 90 : 270;
 		$calcYaw = ($thetaOffset + $tan);
-		$this->finalYaw = $this->entity->yaw = Utils::wrapAngleTo360($calcYaw);
+		$this->finalHeadYaw =$this->finalYaw = $this->entity->yaw = Utils::wrapAngleTo360($calcYaw);
 	}
 	
 	public function lookOffset($x, $y, $z, $pitch = true){
