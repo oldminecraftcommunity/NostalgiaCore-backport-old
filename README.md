@@ -3,6 +3,8 @@
 # NostalgiaCore
 
 ## This backport is no longer maintained!
+## New backport: https://github.com/oldminecraftcommunity/NostalgiaCore-Backport 
+
 
 NostalgiaCore is a fork of Legacy PocketMine-MP 1.3.12, which fixes bugs of Legacy PocketMine-MP, and adds new content
 
